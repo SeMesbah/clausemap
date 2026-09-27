@@ -1,0 +1,452 @@
+{
+  "schema_version": "1",
+  "document": {
+    "title": "Supply Agreement — TechCorp Ltd. and Meridian Supplies B.V.",
+    "page_count": 20
+  },
+  "nodes": [
+    {
+      "id": "n1", "label": "TechCorp Ltd.", "type": "party",
+      "aliases": ["the Buyer", "TechCorp"],
+      "mentions": 12,
+      "evidence": [
+        { "page": 1, "quote": "This Agreement is entered into by TechCorp Ltd. (hereinafter \"the Buyer\") and Meridian Supplies B.V." },
+        { "page": 3, "quote": "The Buyer shall submit purchase orders to the Supplier no later than ten Business Days before the required delivery date." }
+      ]
+    },
+    {
+      "id": "n2", "label": "Meridian Supplies B.V.", "type": "party",
+      "aliases": ["the Supplier", "Meridian"],
+      "mentions": 14,
+      "evidence": [
+        { "page": 1, "quote": "This Agreement is entered into by TechCorp Ltd. and Meridian Supplies B.V. (hereinafter \"the Supplier\")." },
+        { "page": 4, "quote": "The Supplier shall deliver all Products to the Delivery Location no later than the Delivery Date specified in each Purchase Order." }
+      ]
+    },
+    {
+      "id": "n3", "label": "Oversight Committee", "type": "party",
+      "aliases": ["the Committee"],
+      "mentions": 4,
+      "evidence": [
+        { "page": 6, "quote": "The Oversight Committee (hereinafter \"the Committee\") shall review disputes within fifteen Business Days of receipt of a written notice." }
+      ]
+    },
+    {
+      "id": "n4", "label": "Board of Directors", "type": "party",
+      "aliases": ["the Board"],
+      "mentions": 3,
+      "evidence": [
+        { "page": 9, "quote": "Any amendment to this Agreement must be approved by the Board of Directors of each Party." }
+      ]
+    },
+    {
+      "id": "n5", "label": "Escrow Agent", "type": "party",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 12, "quote": "The security deposit shall be held by the Escrow Agent in a segregated account." }
+      ]
+    },
+    {
+      "id": "n6", "label": "submit purchase orders", "type": "obligation",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 3, "quote": "The Buyer shall submit purchase orders to the Supplier no later than ten Business Days before the required delivery date." }
+      ]
+    },
+    {
+      "id": "n7", "label": "deliver Products to Delivery Location", "type": "obligation",
+      "aliases": [],
+      "mentions": 4,
+      "evidence": [
+        { "page": 4, "quote": "The Supplier shall deliver all Products to the Delivery Location no later than the Delivery Date specified in each Purchase Order." }
+      ]
+    },
+    {
+      "id": "n8", "label": "pay invoices within 30 days", "type": "obligation",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 5, "quote": "The Buyer shall pay all undisputed invoices within thirty calendar days of the invoice date." }
+      ]
+    },
+    {
+      "id": "n9", "label": "maintain product quality certifications", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 7, "quote": "The Supplier shall maintain all product quality certifications required by applicable law throughout the Term." }
+      ]
+    },
+    {
+      "id": "n10", "label": "provide written notice of defects", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 8, "quote": "The Buyer shall provide written notice of any defects within five Business Days of receipt of the relevant Products." }
+      ]
+    },
+    {
+      "id": "n11", "label": "replace or repair defective Products", "type": "obligation",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 8, "quote": "The Supplier shall, at its option, replace or repair any defective Products within fifteen Business Days of receiving written notice." }
+      ]
+    },
+    {
+      "id": "n12", "label": "maintain confidentiality", "type": "obligation",
+      "aliases": [],
+      "mentions": 4,
+      "evidence": [
+        { "page": 10, "quote": "Each Party shall maintain the confidentiality of all Confidential Information received from the other Party." }
+      ]
+    },
+    {
+      "id": "n13", "label": "carry adequate insurance", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 11, "quote": "The Supplier shall carry adequate product liability insurance with coverage of no less than five million euros." }
+      ]
+    },
+    {
+      "id": "n14", "label": "provide quarterly compliance reports", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 12, "quote": "The Supplier shall provide quarterly compliance reports to the Buyer no later than fifteen days after each quarter end." }
+      ]
+    },
+    {
+      "id": "n15", "label": "notify of force majeure events", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 14, "quote": "A Party claiming force majeure must notify the other Party in writing within two Business Days of the commencement of the relevant event." }
+      ]
+    },
+    {
+      "id": "n16", "label": "submit audit requests", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 15, "quote": "The Buyer may submit audit requests no more than twice per calendar year with at least ten Business Days advance written notice." }
+      ]
+    },
+    {
+      "id": "n17", "label": "cooperate with audits", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 15, "quote": "The Supplier shall cooperate fully with any audit conducted by the Buyer or its designated auditor." }
+      ]
+    },
+    {
+      "id": "n18", "label": "return or destroy Confidential Information", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 16, "quote": "Upon termination of this Agreement, each Party shall promptly return or destroy all Confidential Information of the other Party." }
+      ]
+    },
+    {
+      "id": "n19", "label": "provide 90-day termination notice", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 17, "quote": "Either Party may terminate this Agreement for convenience by providing ninety calendar days written notice to the other Party." }
+      ]
+    },
+    {
+      "id": "n20", "label": "pay interest on late payments", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 5, "quote": "Any amounts not paid when due shall accrue interest at a rate of two percent per month until paid in full." }
+      ]
+    },
+    {
+      "id": "n21", "label": "indemnify for third-party claims", "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 13, "quote": "The Supplier shall indemnify, defend and hold harmless the Buyer from any third-party claims arising from the Supplier's breach of this Agreement." }
+      ]
+    },
+    {
+      "id": "n22", "label": "Effective Date — 1 January 2024", "type": "date",
+      "aliases": ["the Effective Date"],
+      "mentions": 5,
+      "evidence": [
+        { "page": 1, "quote": "This Agreement is effective as of 1 January 2024 (the \"Effective Date\")." }
+      ]
+    },
+    {
+      "id": "n23", "label": "Initial Term — 3 years", "type": "date",
+      "aliases": ["the Initial Term"],
+      "mentions": 3,
+      "evidence": [
+        { "page": 2, "quote": "This Agreement shall have an initial term of three years commencing on the Effective Date (the \"Initial Term\")." }
+      ]
+    },
+    {
+      "id": "n24", "label": "Renewal Term — 1 year", "type": "date",
+      "aliases": ["each Renewal Term"],
+      "mentions": 2,
+      "evidence": [
+        { "page": 2, "quote": "After the Initial Term, this Agreement shall automatically renew for successive one-year periods unless either Party gives written notice of non-renewal." }
+      ]
+    },
+    {
+      "id": "n25", "label": "invoice payment — 30 days", "type": "date",
+      "aliases": ["the Payment Due Date"],
+      "mentions": 3,
+      "evidence": [
+        { "page": 5, "quote": "The Buyer shall pay all undisputed invoices within thirty calendar days of the invoice date." }
+      ]
+    },
+    {
+      "id": "n26", "label": "defect notice — 5 Business Days", "type": "date",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 8, "quote": "The Buyer shall provide written notice of any defects within five Business Days of receipt of the relevant Products." }
+      ]
+    },
+    {
+      "id": "n27", "label": "defect remedy — 15 Business Days", "type": "date",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 8, "quote": "The Supplier shall, at its option, replace or repair any defective Products within fifteen Business Days of receiving written notice." }
+      ]
+    },
+    {
+      "id": "n28", "label": "audit notice — 10 Business Days", "type": "date",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 15, "quote": "The Buyer may submit audit requests no more than twice per calendar year with at least ten Business Days advance written notice." }
+      ]
+    },
+    {
+      "id": "n29", "label": "termination notice — 90 days", "type": "date",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 17, "quote": "Either Party may terminate this Agreement for convenience by providing ninety calendar days written notice to the other Party." }
+      ]
+    },
+    {
+      "id": "n30", "label": "confidentiality obligation — 5 years post-termination", "type": "date",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 10, "quote": "The confidentiality obligations under this Section shall survive termination of this Agreement for a period of five years." }
+      ]
+    },
+    {
+      "id": "n31", "label": "force majeure notice — 2 Business Days", "type": "date",
+      "aliases": [],
+      "mentions": 1,
+      "evidence": [
+        { "page": 14, "quote": "A Party claiming force majeure must notify the other Party in writing within two Business Days of the commencement of the relevant event." }
+      ]
+    },
+    {
+      "id": "n32", "label": "Annual Contract Value — EUR 2,400,000", "type": "amount",
+      "aliases": ["the ACV"],
+      "mentions": 3,
+      "evidence": [
+        { "page": 3, "quote": "The estimated annual contract value is two million four hundred thousand euros (EUR 2,400,000) (the \"ACV\")." }
+      ]
+    },
+    {
+      "id": "n33", "label": "late payment interest — 2% per month", "type": "amount",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 5, "quote": "Any amounts not paid when due shall accrue interest at a rate of two percent per month until paid in full." }
+      ]
+    },
+    {
+      "id": "n34", "label": "insurance coverage — EUR 5,000,000", "type": "amount",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 11, "quote": "The Supplier shall carry adequate product liability insurance with coverage of no less than five million euros." }
+      ]
+    },
+    {
+      "id": "n35", "label": "liability cap — 12 months ACV", "type": "amount",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 13, "quote": "Neither Party's aggregate liability under this Agreement shall exceed the ACV paid in the twelve months preceding the event giving rise to liability." }
+      ]
+    },
+    {
+      "id": "n36", "label": "security deposit — EUR 120,000", "type": "amount",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 12, "quote": "The Buyer shall provide a security deposit of one hundred twenty thousand euros (EUR 120,000) on the Effective Date." }
+      ]
+    },
+    {
+      "id": "n37", "label": "minimum order quantity — 500 units per order", "type": "amount",
+      "aliases": ["MOQ"],
+      "mentions": 2,
+      "evidence": [
+        { "page": 3, "quote": "Each Purchase Order must specify a minimum order quantity of five hundred units (the \"MOQ\")." }
+      ]
+    },
+    {
+      "id": "n38", "label": "price escalation cap — 3% per year", "type": "amount",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 6, "quote": "Unit prices may be adjusted annually by no more than three percent above the Consumer Price Index." }
+      ]
+    },
+    {
+      "id": "n39", "label": "Pricing and Payment", "type": "topic",
+      "aliases": [],
+      "mentions": 6,
+      "evidence": [
+        { "page": 5, "quote": "Section 4 — Pricing and Payment sets out all invoicing, payment timing and interest provisions." }
+      ]
+    },
+    {
+      "id": "n40", "label": "Delivery and Acceptance", "type": "topic",
+      "aliases": [],
+      "mentions": 5,
+      "evidence": [
+        { "page": 4, "quote": "Section 3 — Delivery and Acceptance governs delivery obligations, risk of loss and acceptance testing." }
+      ]
+    },
+    {
+      "id": "n41", "label": "Confidentiality", "type": "topic",
+      "aliases": [],
+      "mentions": 4,
+      "evidence": [
+        { "page": 10, "quote": "Section 7 — Confidentiality sets out each Party's obligations with respect to Confidential Information." }
+      ]
+    },
+    {
+      "id": "n42", "label": "Termination", "type": "topic",
+      "aliases": [],
+      "mentions": 4,
+      "evidence": [
+        { "page": 17, "quote": "Section 10 — Termination sets out the grounds and procedures for ending this Agreement." }
+      ]
+    },
+    {
+      "id": "n43", "label": "Force Majeure", "type": "topic",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 14, "quote": "Section 9 — Force Majeure excuses performance where events beyond a Party's reasonable control prevent compliance." }
+      ]
+    },
+    {
+      "id": "n44", "label": "Warranties and Representations", "type": "topic",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 7, "quote": "Section 5 — Warranties and Representations sets out the representations each Party makes at the Effective Date and on an ongoing basis." }
+      ]
+    },
+    {
+      "id": "n45", "label": "Dispute Resolution", "type": "topic",
+      "aliases": [],
+      "mentions": 3,
+      "evidence": [
+        { "page": 18, "quote": "Section 11 — Dispute Resolution requires the Parties to attempt mediation before commencing arbitration." }
+      ]
+    }
+  ],
+  "edges": [
+    { "id": "e1",  "source": "n1",  "target": "n6",  "relation": "must perform", "evidence": [{ "page": 3, "quote": "The Buyer shall submit purchase orders to the Supplier no later than ten Business Days before the required delivery date." }] },
+    { "id": "e2",  "source": "n6",  "target": "n2",  "relation": "sent to",      "evidence": [{ "page": 3, "quote": "The Buyer shall submit purchase orders to the Supplier no later than ten Business Days before the required delivery date." }] },
+    { "id": "e3",  "source": "n2",  "target": "n7",  "relation": "must perform", "evidence": [{ "page": 4, "quote": "The Supplier shall deliver all Products to the Delivery Location no later than the Delivery Date specified in each Purchase Order." }] },
+    { "id": "e4",  "source": "n7",  "target": "n40", "relation": "governed by",  "evidence": [{ "page": 4, "quote": "Section 3 — Delivery and Acceptance governs delivery obligations, risk of loss and acceptance testing." }] },
+    { "id": "e5",  "source": "n1",  "target": "n8",  "relation": "must perform", "evidence": [{ "page": 5, "quote": "The Buyer shall pay all undisputed invoices within thirty calendar days of the invoice date." }] },
+    { "id": "e6",  "source": "n8",  "target": "n25", "relation": "due by",       "evidence": [{ "page": 5, "quote": "The Buyer shall pay all undisputed invoices within thirty calendar days of the invoice date." }] },
+    { "id": "e7",  "source": "n8",  "target": "n39", "relation": "governed by",  "evidence": [{ "page": 5, "quote": "Section 4 — Pricing and Payment sets out all invoicing, payment timing and interest provisions." }] },
+    { "id": "e8",  "source": "n1",  "target": "n20", "relation": "liable for",   "evidence": [{ "page": 5, "quote": "Any amounts not paid when due shall accrue interest at a rate of two percent per month until paid in full." }] },
+    { "id": "e9",  "source": "n20", "target": "n33", "relation": "at rate",      "evidence": [{ "page": 5, "quote": "Any amounts not paid when due shall accrue interest at a rate of two percent per month until paid in full." }] },
+    { "id": "e10", "source": "n2",  "target": "n9",  "relation": "must perform", "evidence": [{ "page": 7, "quote": "The Supplier shall maintain all product quality certifications required by applicable law throughout the Term." }] },
+    { "id": "e11", "source": "n9",  "target": "n44", "relation": "covered by",   "evidence": [{ "page": 7, "quote": "Section 5 — Warranties and Representations sets out the representations each Party makes at the Effective Date." }] },
+    { "id": "e12", "source": "n1",  "target": "n10", "relation": "must perform", "evidence": [{ "page": 8, "quote": "The Buyer shall provide written notice of any defects within five Business Days of receipt of the relevant Products." }] },
+    { "id": "e13", "source": "n10", "target": "n26", "relation": "within",       "evidence": [{ "page": 8, "quote": "The Buyer shall provide written notice of any defects within five Business Days of receipt of the relevant Products." }] },
+    { "id": "e14", "source": "n2",  "target": "n11", "relation": "must perform", "evidence": [{ "page": 8, "quote": "The Supplier shall, at its option, replace or repair any defective Products within fifteen Business Days of receiving written notice." }] },
+    { "id": "e15", "source": "n11", "target": "n27", "relation": "within",       "evidence": [{ "page": 8, "quote": "The Supplier shall, at its option, replace or repair any defective Products within fifteen Business Days of receiving written notice." }] },
+    { "id": "e16", "source": "n4",  "target": "n19", "relation": "must approve", "evidence": [{ "page": 9, "quote": "Any amendment to this Agreement must be approved by the Board of Directors of each Party." }] },
+    { "id": "e17", "source": "n1",  "target": "n12", "relation": "must perform", "evidence": [{ "page": 10, "quote": "Each Party shall maintain the confidentiality of all Confidential Information received from the other Party." }] },
+    { "id": "e18", "source": "n2",  "target": "n12", "relation": "must perform", "evidence": [{ "page": 10, "quote": "Each Party shall maintain the confidentiality of all Confidential Information received from the other Party." }] },
+    { "id": "e19", "source": "n12", "target": "n30", "relation": "survives for", "evidence": [{ "page": 10, "quote": "The confidentiality obligations under this Section shall survive termination of this Agreement for a period of five years." }] },
+    { "id": "e20", "source": "n12", "target": "n41", "relation": "governed by",  "evidence": [{ "page": 10, "quote": "Section 7 — Confidentiality sets out each Party's obligations with respect to Confidential Information." }] },
+    { "id": "e21", "source": "n2",  "target": "n13", "relation": "must maintain","evidence": [{ "page": 11, "quote": "The Supplier shall carry adequate product liability insurance with coverage of no less than five million euros." }] },
+    { "id": "e22", "source": "n13", "target": "n34", "relation": "minimum",      "evidence": [{ "page": 11, "quote": "The Supplier shall carry adequate product liability insurance with coverage of no less than five million euros." }] },
+    { "id": "e23", "source": "n1",  "target": "n36", "relation": "must provide", "evidence": [{ "page": 12, "quote": "The Buyer shall provide a security deposit of one hundred twenty thousand euros (EUR 120,000) on the Effective Date." }] },
+    { "id": "e24", "source": "n36", "target": "n5",  "relation": "held by",      "evidence": [{ "page": 12, "quote": "The security deposit shall be held by the Escrow Agent in a segregated account." }] },
+    { "id": "e25", "source": "n2",  "target": "n14", "relation": "must provide", "evidence": [{ "page": 12, "quote": "The Supplier shall provide quarterly compliance reports to the Buyer no later than fifteen days after each quarter end." }] },
+    { "id": "e26", "source": "n2",  "target": "n21", "relation": "liable for",   "evidence": [{ "page": 13, "quote": "The Supplier shall indemnify, defend and hold harmless the Buyer from any third-party claims arising from the Supplier's breach." }] },
+    { "id": "e27", "source": "n21", "target": "n35", "relation": "capped at",    "evidence": [{ "page": 13, "quote": "Neither Party's aggregate liability under this Agreement shall exceed the ACV paid in the twelve months preceding the event." }] },
+    { "id": "e28", "source": "n1",  "target": "n15", "relation": "must perform", "evidence": [{ "page": 14, "quote": "A Party claiming force majeure must notify the other Party in writing within two Business Days of the commencement of the relevant event." }] },
+    { "id": "e29", "source": "n2",  "target": "n15", "relation": "must perform", "evidence": [{ "page": 14, "quote": "A Party claiming force majeure must notify the other Party in writing within two Business Days of the commencement of the relevant event." }] },
+    { "id": "e30", "source": "n15", "target": "n31", "relation": "within",       "evidence": [{ "page": 14, "quote": "A Party claiming force majeure must notify the other Party in writing within two Business Days of the commencement of the relevant event." }] },
+    { "id": "e31", "source": "n15", "target": "n43", "relation": "governed by",  "evidence": [{ "page": 14, "quote": "Section 9 — Force Majeure excuses performance where events beyond a Party's reasonable control prevent compliance." }] },
+    { "id": "e32", "source": "n1",  "target": "n16", "relation": "may exercise", "evidence": [{ "page": 15, "quote": "The Buyer may submit audit requests no more than twice per calendar year with at least ten Business Days advance written notice." }] },
+    { "id": "e33", "source": "n16", "target": "n28", "relation": "requires",     "evidence": [{ "page": 15, "quote": "The Buyer may submit audit requests no more than twice per calendar year with at least ten Business Days advance written notice." }] },
+    { "id": "e34", "source": "n2",  "target": "n17", "relation": "must perform", "evidence": [{ "page": 15, "quote": "The Supplier shall cooperate fully with any audit conducted by the Buyer or its designated auditor." }] },
+    { "id": "e35", "source": "n1",  "target": "n18", "relation": "must perform", "evidence": [{ "page": 16, "quote": "Upon termination of this Agreement, each Party shall promptly return or destroy all Confidential Information of the other Party." }] },
+    { "id": "e36", "source": "n2",  "target": "n18", "relation": "must perform", "evidence": [{ "page": 16, "quote": "Upon termination of this Agreement, each Party shall promptly return or destroy all Confidential Information of the other Party." }] },
+    { "id": "e37", "source": "n1",  "target": "n19", "relation": "may exercise", "evidence": [{ "page": 17, "quote": "Either Party may terminate this Agreement for convenience by providing ninety calendar days written notice to the other Party." }] },
+    { "id": "e38", "source": "n2",  "target": "n19", "relation": "may exercise", "evidence": [{ "page": 17, "quote": "Either Party may terminate this Agreement for convenience by providing ninety calendar days written notice to the other Party." }] },
+    { "id": "e39", "source": "n19", "target": "n29", "relation": "requires",     "evidence": [{ "page": 17, "quote": "Either Party may terminate this Agreement for convenience by providing ninety calendar days written notice to the other Party." }] },
+    { "id": "e40", "source": "n19", "target": "n42", "relation": "governed by",  "evidence": [{ "page": 17, "quote": "Section 10 — Termination sets out the grounds and procedures for ending this Agreement." }] },
+    { "id": "e41", "source": "n3",  "target": "n45", "relation": "participates in","evidence": [{ "page": 18, "quote": "Section 11 — Dispute Resolution requires the Parties to attempt mediation before commencing arbitration." }] },
+    { "id": "e42", "source": "n1",  "target": "n45", "relation": "subject to",   "evidence": [{ "page": 18, "quote": "Section 11 — Dispute Resolution requires the Parties to attempt mediation before commencing arbitration." }] },
+    { "id": "e43", "source": "n2",  "target": "n45", "relation": "subject to",   "evidence": [{ "page": 18, "quote": "Section 11 — Dispute Resolution requires the Parties to attempt mediation before commencing arbitration." }] },
+    { "id": "e44", "source": "n32", "target": "n8",  "relation": "basis for",    "evidence": [{ "page": 5, "quote": "The estimated annual contract value is two million four hundred thousand euros (EUR 2,400,000) (the \"ACV\")." }] },
+    { "id": "e45", "source": "n32", "target": "n35", "relation": "determines",   "evidence": [{ "page": 13, "quote": "Neither Party's aggregate liability under this Agreement shall exceed the ACV paid in the twelve months preceding the event." }] },
+    { "id": "e46", "source": "n22", "target": "n23", "relation": "starts",       "evidence": [{ "page": 2, "quote": "This Agreement shall have an initial term of three years commencing on the Effective Date." }] },
+    { "id": "e47", "source": "n23", "target": "n24", "relation": "followed by",  "evidence": [{ "page": 2, "quote": "After the Initial Term, this Agreement shall automatically renew for successive one-year periods." }] },
+    { "id": "e48", "source": "n37", "target": "n6",  "relation": "applies to",   "evidence": [{ "page": 3, "quote": "Each Purchase Order must specify a minimum order quantity of five hundred units (the \"MOQ\")." }] },
+    { "id": "e49", "source": "n38", "target": "n32", "relation": "caps changes to","evidence": [{ "page": 6, "quote": "Unit prices may be adjusted annually by no more than three percent above the Consumer Price Index." }] },
+    { "id": "e50", "source": "n2",  "target": "n44", "relation": "subject to",   "evidence": [{ "page": 7, "quote": "Section 5 — Warranties and Representations sets out the representations each Party makes at the Effective Date." }] },
+    { "id": "e51", "source": "n1",  "target": "n44", "relation": "subject to",   "evidence": [{ "page": 7, "quote": "Section 5 — Warranties and Representations sets out the representations each Party makes at the Effective Date." }] },
+    { "id": "e52", "source": "n36", "target": "n22", "relation": "due on",       "evidence": [{ "page": 12, "quote": "The Buyer shall provide a security deposit of one hundred twenty thousand euros (EUR 120,000) on the Effective Date." }] },
+    { "id": "e53", "source": "n14", "target": "n2",  "relation": "delivered to", "evidence": [{ "page": 12, "quote": "The Supplier shall provide quarterly compliance reports to the Buyer no later than fifteen days after each quarter end." }] },
+    { "id": "e54", "source": "n4",  "target": "n1",  "relation": "governs",      "evidence": [{ "page": 9, "quote": "Any amendment to this Agreement must be approved by the Board of Directors of each Party." }] },
+    { "id": "e55", "source": "n4",  "target": "n2",  "relation": "governs",      "evidence": [{ "page": 9, "quote": "Any amendment to this Agreement must be approved by the Board of Directors of each Party." }] },
+    { "id": "e56", "source": "n5",  "target": "n36", "relation": "holds",        "evidence": [{ "page": 12, "quote": "The security deposit shall be held by the Escrow Agent in a segregated account." }] },
+    { "id": "e57", "source": "n16", "target": "n2",  "relation": "targets",      "evidence": [{ "page": 15, "quote": "The Buyer may submit audit requests no more than twice per calendar year." }] },
+    { "id": "e58", "source": "n3",  "target": "n10", "relation": "reviews",      "evidence": [{ "page": 6, "quote": "The Oversight Committee shall review disputes within fifteen Business Days of receipt of a written notice." }] },
+    { "id": "e59", "source": "n3",  "target": "n11", "relation": "reviews",      "evidence": [{ "page": 6, "quote": "The Oversight Committee shall review disputes within fifteen Business Days of receipt of a written notice." }] },
+    { "id": "e60", "source": "n38", "target": "n39", "relation": "governed by",  "evidence": [{ "page": 6, "quote": "Section 4 — Pricing and Payment sets out all invoicing, payment timing and interest provisions." }] }
+  ],
+  "stats": {
+    "pages": 20,
+    "nodes_before_merge": 52,
+    "nodes": 45,
+    "edges": 60,
+    "items_dropped_unverified": 6,
+    "duration_ms": 38200
+  },
+  "steps": [
+    { "t_ms": 0,     "message": "Read 20 pages" },
+    { "t_ms": 1200,  "message": "Extracted items from pages 1–5" },
+    { "t_ms": 6800,  "message": "Extracted items from pages 6–10" },
+    { "t_ms": 13400, "message": "Extracted items from pages 11–15" },
+    { "t_ms": 22100, "message": "Extracted items from pages 16–20" },
+    { "t_ms": 34200, "message": "Verified quotes — dropped 6 unverified" },
+    { "t_ms": 36100, "message": "Merged duplicates: 52 → 45 nodes" },
+    { "t_ms": 36800, "message": "Assembled graph: 45 nodes, 60 edges" }
+  ],
+  "warnings": []
+}

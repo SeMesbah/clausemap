@@ -1,18 +1,9 @@
-import type { GraphData } from '../../App'
 import styles from './UploadScreen.module.css'
 
 interface Props {
   onProcessingStart: () => void
-  onProcessingComplete: (data: GraphData) => void
+  onProcessingComplete: (data: unknown) => void
 }
-
-const STAGES = [
-  'Reading document...',
-  'Splitting into chunks...',
-  'Extracting entities & relationships...',
-  'Building knowledge graph...',
-  'Generating embeddings...',
-]
 
 export default function UploadScreen({ onProcessingStart, onProcessingComplete }: Props) {
   const handleFile = async (file: File) => {

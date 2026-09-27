@@ -2,13 +2,15 @@
 // Requires: npm install react-force-graph
 // TODO: wire up react-force-graph with node colour by type, click handler, highlight support
 
-import type { GraphData, GraphNode } from '../../App'
 import styles from './GraphCanvas.module.css'
 
+interface _GraphNode { id: string; label: string; type: string; mentions: number; evidence: { text: string; page: number }[]; connections: string[] }
+interface _GraphData { nodes: _GraphNode[]; edges: { source: string; target: string; relation: string }[]; stats: { entities: number; concepts: number; relationships: number } }
+
 interface Props {
-  data: GraphData
+  data: _GraphData
   highlightedNodes: string[]
-  onNodeClick: (node: GraphNode) => void
+  onNodeClick: (node: _GraphNode) => void
   animateOnMount: boolean
 }
 
@@ -19,7 +21,7 @@ const TYPE_COLORS: Record<string, string> = {
   technology: '#34d399',
 }
 
-export default function GraphCanvas({ data, highlightedNodes, onNodeClick }: Props) {
+export default function GraphCanvas({ data, highlightedNodes, onNodeClick: _onNodeClick }: Props) {
   // Placeholder — replace with ForceGraph2D from react-force-graph
   return (
     <div className={styles.canvas}>
@@ -40,12 +42,12 @@ export default function GraphCanvas({ data, highlightedNodes, onNodeClick }: Pro
         </div>
         {/* Sample node list for development */}
         <div className={styles.nodeList}>
-          {data.nodes.map((n) => (
+          {data.nodes.map((n: _GraphNode) => (
             <button
               key={n.id}
               className={`${styles.nodeBtn} ${highlightedNodes.includes(n.id) ? styles.highlighted : ''}`}
               style={{ borderColor: TYPE_COLORS[n.type] ?? '#888' }}
-              onClick={() => onNodeClick(n)}
+              onClick={() => _onNodeClick(n)}
             >
               {n.label}
             </button>

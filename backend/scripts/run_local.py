@@ -31,6 +31,7 @@ load_dotenv(_BACKEND / ".env")
 from app.pdf import extract_pages
 from app.extract import extract_all, PageExtraction
 from app.verify import verify_quote
+from app.pipeline import run_pipeline
 
 
 # ---------------------------------------------------------------------------
@@ -105,9 +106,29 @@ async def _stage_extract(pdf_path: Path) -> None:
 
 
 async def _stage_map(pdf_path: Path) -> None:
-    # Implemented in Phase A2
-    print("[map] stage not yet implemented — come back in Phase A2.")
-    sys.exit(1)
+    print(f"\n[map] {pdf_path.name}")
+    t0 = time.perf_counter()
+
+    data = pdf_path.read_bytes()
+    title = pdf_path.stem.replace("-", " ").replace("_", " ").title()
+
+    result = await run_pipeline(data, title)
+
+    elapsed = time.perf_counter() - t0
+    print(f"  Pipeline done in {elapsed:.1f}s")
+    print(f"\n  Pages:          {result.stats.pages}")
+    print(f"  Nodes:          {result.stats.nodes} (before merge: {result.stats.nodes_before_merge})")
+    print(f"  Edges:          {result.stats.edges}")
+    print(f"  Dropped:        {result.stats.items_dropped_unverified} (quotes not verified)")
+    if result.warnings:
+        for w in result.warnings:
+            print(f"  [warn] {w}")
+
+    cache_dir = _BACKEND / "cache"
+    cache_dir.mkdir(exist_ok=True)
+    out_path = cache_dir / f"{pdf_path.stem}.json"
+    out_path.write_text(result.model_dump_json(indent=2))
+    print(f"\n  Written → {out_path.relative_to(_BACKEND)}")
 
 
 # ---------------------------------------------------------------------------

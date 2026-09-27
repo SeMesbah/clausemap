@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 // @ts-expect-error — cytoscape-fcose has no bundled types
 import fcose from "cytoscape-fcose";
-import type { MapResult } from "../../lib/types";
+import type { MapResult } from "../../../lib/types";
 
 cytoscape.use(fcose);
 
@@ -58,11 +58,11 @@ export default function MapGraph({ nodes, edges, selectedId, onSelect }: Props) 
           selector: "node",
           style: {
             "background-color": (ele: cytoscape.NodeSingular) =>
-              NODE_COLORS[ele.data("type")] ?? "#6E7378",
+              NODE_COLORS[ele.data("type") as string] ?? "#6E7378",
             shape: (ele: cytoscape.NodeSingular) =>
-              NODE_SHAPES[ele.data("type")] ?? "ellipse",
+              (NODE_SHAPES[ele.data("type") as string] ?? "ellipse") as cytoscape.Css.NodeShape,
             label: (ele: cytoscape.NodeSingular) => {
-              const lbl: string = ele.data("label") ?? "";
+              const lbl: string = (ele.data("label") as string) ?? "";
               return lbl.length > 28 ? lbl.slice(0, 27) + "…" : lbl;
             },
             "font-family": '"IBM Plex Sans", system-ui, sans-serif',

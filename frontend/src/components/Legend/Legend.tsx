@@ -1,4 +1,4 @@
-import type { NodeType } from "../../lib/types";
+import type { NodeType } from "../../../lib/types";
 
 const LEGEND_ITEMS: { type: NodeType; color: string; shape: string; label: string }[] = [
   { type: "party",      color: "#2F5D8A", shape: "●", label: "Party" },
