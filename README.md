@@ -1,4 +1,4 @@
-# DocVerse — Your Documents, Rebuilt as a World
+# ClauseMap — Your Documents, Rebuilt as a World
 
 > Turn any PDF into an interactive, explorable knowledge graph. RAG you can walk through.
 
@@ -6,7 +6,7 @@
 
 ## What it does
 
-Upload a document. DocVerse reads it, extracts entities and relationships using an LLM, builds a knowledge graph, and lets you:
+Upload a document. ClauseMap reads it, extracts entities and relationships using an LLM, builds a knowledge graph, and lets you:
 
 - **Explore** — click any node to see evidence passages from the original document
 - **Ask** — chat with your document; answers are grounded in source text with page citations

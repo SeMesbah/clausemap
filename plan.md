@@ -563,7 +563,7 @@ Contract rules:
 
 *Added 14:40 after a UI review. Decisions: time-boxed today, keep the brand guide as the source of truth, "dynamic" = motion on the map + richer interaction + a livelier upload page. This phase moves the Phase S video recording to 15:45 (see the updated timeline).*
 
-**Goal:** the map feels alive and obviously interactive in the video, fits the brand, and has no visible leftovers from the template or the old DocVerse theme.
+**Goal:** the map feels alive and obviously interactive in the video, fits the brand, and has no visible leftovers from the template or the old ClauseMap theme.
 
 **What's wrong today (the review, so the tasks make sense):**
 1. `#root { width: 1126px }` (Vite template, `src/index.css`) squeezes the map into a centred strip on wide screens.
@@ -576,7 +576,7 @@ Contract rules:
 8. Header stacks 9 things above the graph; legend and filter chips repeat the same 5 types in two rows.
 9. Empty right panel (35% of the screen) until the first click; relations invisible on the map until a click.
 10. Inline `style={{}}` everywhere, so there are no hover or focus states; Tailwind brand tokens in `index.css` are unused; type colours copied into 4 files.
-11. Dead DocVerse code: `src/App.css`, `components/ChatBox`, `components/GraphCanvas`, `components/UploadScreen`, `NodePanel.module.css`, `assets/hero.png`, `react.svg`, `vite.svg`.
+11. Dead ClauseMap code: `src/App.css`, `components/ChatBox`, `components/GraphCanvas`, `components/UploadScreen`, `NodePanel.module.css`, `assets/hero.png`, `react.svg`, `vite.svg`.
 12. Stats say "nodes · links" instead of the reader's words (parties, obligations, deadlines).
 
 **MVP definition:** on the deployed site, the map fills the screen, draws itself with an animated layout, highlights a node's neighbours and relation labels on hover, flies to a clicked node, and filters without nodes jumping. The home page accepts drag-and-drop and shows a step-by-step progress with a timer. No Contour-coloured text, no emoji, no dead files.

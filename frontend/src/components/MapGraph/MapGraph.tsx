@@ -41,6 +41,19 @@ function applyVisibility(cy: cytoscape.Core, visibleIds: Set<string>) {
   });
 }
 
+/** Zoom level at which every node shows its label. */
+const LABEL_ZOOM = 1.4;
+
+function updateZoomLabels(cy: cytoscape.Core) {
+  const show = cy.zoom() >= LABEL_ZOOM;
+  if (show === cy.scratch("_zoomLabels")) return;
+  cy.scratch("_zoomLabels", show);
+  cy.batch(() => {
+    if (show) cy.nodes().addClass("zoom-label");
+    else cy.nodes().removeClass("zoom-label");
+  });
+}
+
 function runLayout(
   cy: cytoscape.Core,
   isFirst: boolean,
@@ -58,12 +71,15 @@ function runLayout(
     animationEasing: isFirst ? "ease-out-cubic" : ("ease-in-out-cubic" as unknown as undefined),
     randomize: isFirst,
     fit: false,
-    nodeRepulsion: () => 8000,
-    idealEdgeLength: () => 90,
+    nodeRepulsion: () => 12000,
+    idealEdgeLength: () => 120,
+    nodeSeparation: 100,
+    nodeDimensionsIncludeLabels: true,
   } as Parameters<cytoscape.Core["layout"]>[0]);
 
   layout.on("layoutstop", () => {
     if (isFirst) cy.fit(undefined, 40);
+    updateZoomLabels(cy);
     layoutRef.current = null;
   });
 
@@ -105,10 +121,18 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
 
     const maxMentions = Math.max(...nodes.map((n) => n.mentions), 1);
 
+    // Only the most-mentioned nodes are labelled in the overview; the rest
+    // reveal their names on zoom, hover or selection.
+    const hubCount = Math.max(5, Math.ceil(nodes.length * 0.15));
+    const hubIds = new Set(
+      [...nodes].sort((a, b) => b.mentions - a.mentions).slice(0, hubCount).map((n) => n.id)
+    );
+
     const cy = cytoscape({
       container: containerRef.current,
       elements: [
         ...nodes.map((n) => ({
+          classes: hubIds.has(n.id) ? "hub" : "",
           data: {
             id: n.id,
             label: n.label,
@@ -136,19 +160,26 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
               (TYPE_SHAPE[ele.data("type") as keyof typeof TYPE_SHAPE] ?? "ellipse") as cytoscape.Css.NodeShape,
             width: (ele: cytoscape.NodeSingular) => ele.data("size") as number,
             height: (ele: cytoscape.NodeSingular) => ele.data("size") as number,
-            label: "data(label)",
+            label: "",
             "font-family": '"IBM Plex Sans", system-ui, sans-serif',
-            "font-size": "12px",
+            "font-size": "11px",
             color: "#1C2B39",
             "text-valign": "bottom",
             "text-margin-y": 4,
             "text-wrap": "ellipsis",
-            "text-max-width": "120px",
-            "min-zoomed-font-size": 8,
+            "text-max-width": "100px",
+            "text-outline-color": "#F6F3EC",
+            "text-outline-width": 2,
+            "min-zoomed-font-size": 7,
             "transition-property": "opacity",
             "transition-duration": 150,
           },
         },
+        {
+          selector: "node.hub, node.zoom-label, node.hover-label, node.show-label, node.selected",
+          style: { label: "data(label)" },
+        },
+        { selector: "node.hub", style: { "font-weight": 600 } },
         { selector: "node.hidden", style: { display: "none" } },
         { selector: "node.faded", style: { opacity: 0.15 } },
         {
@@ -158,10 +189,12 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
         {
           selector: "edge",
           style: {
-            width: 1.5,
+            width: 1,
             "line-color": "#B9B4A8",
+            "line-opacity": 0.7,
             "target-arrow-color": "#B9B4A8",
             "target-arrow-shape": "triangle",
+            "arrow-scale": 0.7,
             "curve-style": "bezier",
             "transition-property": "opacity",
             "transition-duration": 150,
@@ -184,7 +217,8 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
         {
           selector: "edge.selected",
           style: {
-            width: 3,
+            width: 2.5,
+            "line-opacity": 1,
             "line-color": "#C8501C",
             "target-arrow-color": "#C8501C",
           },
@@ -207,13 +241,17 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
       const node = evt.target as cytoscape.NodeSingular;
       const neighbourhood = node.closedNeighborhood();
       cy.elements().not(neighbourhood).addClass("faded");
+      neighbourhood.nodes().addClass("hover-label");
       node.connectedEdges().not(".hidden").addClass("labelled");
     });
 
     cy.on("mouseout", "node", () => {
       cy.elements().removeClass("faded");
+      cy.nodes().removeClass("hover-label");
       cy.edges().removeClass("labelled");
     });
+
+    cy.on("zoom", () => updateZoomLabels(cy));
 
     cyRef.current = cy;
 
@@ -259,7 +297,7 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
     const cy = cyRef.current;
     if (!cy) return;
 
-    cy.elements().removeClass("selected faded labelled");
+    cy.elements().removeClass("selected faded labelled show-label");
 
     if (!selectedId) return;
 
@@ -270,6 +308,7 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
     node.connectedEdges().not(".hidden").addClass("selected labelled");
 
     const neighbourhood = node.closedNeighborhood();
+    neighbourhood.nodes().addClass("show-label");
     cy.elements().not(neighbourhood).not(".hidden").addClass("faded");
 
     if (!REDUCED_MOTION) {
@@ -293,13 +332,13 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
       // Clear highlight — already handled by selection effect when selectedId changes
       // but we need to clear faded state explicitly if there's no selection
       if (!selectedId) {
-        cy.elements().removeClass("faded selected labelled");
+        cy.elements().removeClass("faded selected labelled show-label");
       }
       return;
     }
 
     // Clear selection state first
-    cy.elements().removeClass("selected faded labelled");
+    cy.elements().removeClass("selected faded labelled show-label");
 
     // Apply: fade everything not in the highlighted set
     cy.nodes().forEach((node) => {
