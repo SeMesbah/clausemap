@@ -1,0 +1,92 @@
+.panel {
+  background: #13132a;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  color: #e8e8f0;
+  overflow-y: auto;
+  max-height: 420px;
+}
+
+.close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #55556a;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.close:hover { color: #e8e8f0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.emoji { font-size: 1.8rem; }
+
+.label {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.type {
+  font-size: 0.75rem;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: #8888aa;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #55556a;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.connections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.connBtn {
+  background: #1e1e38;
+  border: 1px solid #3b3b5c;
+  border-radius: 6px;
+  color: #c4b5fd;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.connBtn:hover { background: #2a2a4a; }
+
+.evidenceList { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.evidence {
+  background: #1a1a30;
+  border-left: 3px solid #a78bfa;
+  border-radius: 4px;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.evidence p { margin: 0 0 0.3rem; color: #c8c8e0; font-style: italic; }
+
+.evidence cite { color: #55556a; font-size: 0.75rem; font-style: normal; }
