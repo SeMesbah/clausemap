@@ -1,0 +1,9 @@
+demo/
+backend/.venv/
+backend/.env
+backend/tests/
+backend/.pytest_cache/
+**/__pycache__/
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local

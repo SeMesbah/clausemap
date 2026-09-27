@@ -17,3 +17,5 @@ dist/
 *.log
 chroma_db/
 uploads/
+.vercel
+.env*
