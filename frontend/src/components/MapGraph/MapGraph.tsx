@@ -82,9 +82,14 @@ interface Props {
   visibleIds: Set<string>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  /**
+   * When set, these node/edge ids get the orange border + halo and the camera
+   * fits them. Everything else fades to 0.2. Set to null/undefined to clear.
+   */
+  highlightIds?: { nodes: Set<string>; edges: Set<string> } | null;
 }
 
-export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelect }: Props) {
+export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelect, highlightIds }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const layoutRef = useRef<cytoscape.Layouts | null>(null);
@@ -276,6 +281,55 @@ export default function MapGraph({ nodes, edges, visibleIds, selectedId, onSelec
       cy.center(node);
     }
   }, [selectedId]);
+
+  // ------------------------------------------------------------------
+  // Highlight (Ask the map result)
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    if (!highlightIds || (highlightIds.nodes.size === 0 && highlightIds.edges.size === 0)) {
+      // Clear highlight — already handled by selection effect when selectedId changes
+      // but we need to clear faded state explicitly if there's no selection
+      if (!selectedId) {
+        cy.elements().removeClass("faded selected labelled");
+      }
+      return;
+    }
+
+    // Clear selection state first
+    cy.elements().removeClass("selected faded labelled");
+
+    // Apply: fade everything not in the highlighted set
+    cy.nodes().forEach((node) => {
+      if (highlightIds.nodes.has(node.id())) {
+        node.addClass("selected");   // reuses orange border style
+      } else if (!node.hasClass("hidden")) {
+        node.addClass("faded");
+      }
+    });
+    cy.edges().forEach((edge) => {
+      if (highlightIds.edges.has(edge.id())) {
+        edge.addClass("selected labelled");
+      } else if (!edge.hasClass("hidden")) {
+        edge.addClass("faded");
+      }
+    });
+
+    // Fit camera to highlighted elements
+    // Build a selector string for all highlighted node ids
+    const nodeSelector = [...highlightIds.nodes].map((id) => `#${CSS.escape(id)}`).join(", ");
+    const highlighted = nodeSelector ? cy.$(nodeSelector) : cy.collection();
+    if (highlighted.length > 0 && !REDUCED_MOTION) {
+      cy.animate(
+        { fit: { eles: highlighted, padding: 60 } },
+        { duration: 400, easing: "ease-in-out-cubic" as cytoscape.Css.TransitionTimingFunction }
+      );
+    } else if (highlighted.length > 0) {
+      cy.fit(highlighted, 60);
+    }
+  }, [highlightIds, selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ------------------------------------------------------------------
   // Zoom controls

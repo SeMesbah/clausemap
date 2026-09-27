@@ -6,6 +6,7 @@ import MapGraph from "../components/MapGraph/MapGraph";
 import NodePanel from "../components/NodePanel/NodePanel";
 import StepsLog from "../components/StepsLog/StepsLog";
 import TypeFilter from "../components/TypeFilter/TypeFilter";
+import AskBox from "../components/AskBox/AskBox";
 import { ALL_TYPES, TYPE_LABEL_PLURAL, TYPE_COLOR } from "../theme";
 
 // ---------------------------------------------------------------------------
@@ -146,6 +147,7 @@ export default function MapPage({ onNavigateHome }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTypes, setActiveTypes] = useState<Set<NodeType>>(new Set(ALL_TYPES));
   const [searchQuery, setSearchQuery] = useState("");
+  const [highlightIds, setHighlightIds] = useState<{ nodes: Set<string>; edges: Set<string> } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const windowWidth = useWindowWidth();
@@ -232,6 +234,8 @@ export default function MapPage({ onNavigateHome }: Props) {
 
   function handleSelect(id: string | null) {
     setSelectedId(id);
+    // Selecting a node clears the ask-highlight so both don't compete
+    if (id) setHighlightIds(null);
     if (id && !isWide) {
       setTimeout(() => panelRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
@@ -377,6 +381,7 @@ export default function MapPage({ onNavigateHome }: Props) {
               visibleIds={visibleIds}
               selectedId={effectiveSelectedId}
               onSelect={handleSelect}
+              highlightIds={highlightIds}
             />
           </div>
 
@@ -394,6 +399,15 @@ export default function MapPage({ onNavigateHome }: Props) {
                 <DocSummary map={map} onSelect={handleSelect} />
               )}
             </div>
+            {/* AskBox — pinned at the bottom of the panel */}
+            <AskBox
+              map={map}
+              onHighlight={(nodes, edges) => {
+                setHighlightIds({ nodes, edges });
+                setSelectedId(null);
+              }}
+              onClearHighlight={() => setHighlightIds(null)}
+            />
           </div>
         </div>
 
@@ -424,6 +438,7 @@ export default function MapPage({ onNavigateHome }: Props) {
           visibleIds={visibleIds}
           selectedId={effectiveSelectedId}
           onSelect={handleSelect}
+          highlightIds={highlightIds}
         />
       </div>
 
@@ -445,6 +460,16 @@ export default function MapPage({ onNavigateHome }: Props) {
           <DocSummary map={map} onSelect={handleSelect} />
         </div>
       )}
+
+      {/* AskBox — below the panel in narrow layout */}
+      <AskBox
+        map={map}
+        onHighlight={(nodes, edges) => {
+          setHighlightIds({ nodes, edges });
+          setSelectedId(null);
+        }}
+        onClearHighlight={() => setHighlightIds(null)}
+      />
 
       {/* Legal notice footer */}
       <div style={{

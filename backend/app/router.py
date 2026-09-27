@@ -1,8 +1,9 @@
 """
-API routes for Clausemap v1.
+API routes for Clausemap v1 / v1.1.
 
 Endpoints:
   POST /maps          — upload a PDF, return MapResult
+  POST /ask           — ask a question about a MapResult
   GET  /demo/{id}     — serve a cached MapResult
   GET  /health        — liveness probe  (mounted at /api/v1 in main.py)
 """
@@ -19,9 +20,11 @@ from pathlib import Path
 from fastapi import APIRouter, Request, UploadFile
 from fastapi.responses import JSONResponse
 
+from app.ask import answer as _answer_question
 from app.errors import LLMUnavailableError
 from app.pipeline import run_pipeline
 from app.pdf import extract_pages
+from app.schemas import AskRequest
 
 logger = logging.getLogger("clausemap.api")
 
@@ -44,13 +47,16 @@ _PIPELINE_SEM = asyncio.Semaphore(2)
 
 # ---------------------------------------------------------------------------
 # Per-IP rate limiter (in-memory, per-instance)
-# Rate: 5 requests per 600 seconds
+# /maps rate:  5 requests per 600 seconds
+# /ask rate:   6 requests per 600 seconds (separate bucket)
 # ---------------------------------------------------------------------------
 _RATE_WINDOW = 600          # seconds
-_RATE_LIMIT = 5             # max requests per window
+_RATE_LIMIT = 5             # max requests per window (maps)
+_ASK_RATE_LIMIT = 6         # max requests per window (ask)
 
 # { ip: [(timestamp, ...), ...] }
 _rate_store: dict[str, list[float]] = defaultdict(list)
+_ask_rate_store: dict[str, list[float]] = defaultdict(list)
 
 
 def _get_client_ip(request: Request) -> str:
@@ -73,6 +79,18 @@ def _check_rate_limit(ip: str) -> bool:
     if len(_rate_store[ip]) >= _RATE_LIMIT:
         return False
     _rate_store[ip].append(now)
+    return True
+
+
+def _check_ask_rate_limit(ip: str) -> bool:
+    """Return True if the /ask request is allowed, False if rate-limited."""
+    now = time.time()
+    window_start = now - _RATE_WINDOW
+    timestamps = _ask_rate_store[ip]
+    _ask_rate_store[ip] = [t for t in timestamps if t >= window_start]
+    if len(_ask_rate_store[ip]) >= _ASK_RATE_LIMIT:
+        return False
+    _ask_rate_store[ip].append(now)
     return True
 
 
@@ -211,3 +229,56 @@ async def get_demo(demo_id: str):
     return JSONResponse(content=json.loads(cache_file.read_text()))
 
 
+
+
+@router.post("/ask")
+async def ask_map(request: Request, body: AskRequest):
+    t0 = time.perf_counter()
+    ip = _get_client_ip(request)
+
+    # --- Rate limit (separate bucket from /maps) ----------------------------
+    if not _check_ask_rate_limit(ip):
+        return _err(
+            "rate_limited",
+            "Too many questions in a short time. Try again in a few minutes.",
+            429,
+        )
+
+    # --- Global concurrency cap (shared semaphore) --------------------------
+    if not _PIPELINE_SEM._value:
+        return _err(
+            "busy",
+            "Clausemap is busy. Try again in a moment.",
+            429,
+        )
+
+    # --- Validate question (Pydantic already did this, belt-and-suspenders) -
+    question = body.question.strip()
+    if not question:
+        return _err("question_invalid", "Question cannot be empty.", 400)
+
+    # --- Call LLM under semaphore + timeout ---------------------------------
+    try:
+        async with _PIPELINE_SEM:
+            result = await asyncio.wait_for(
+                _answer_question(body),
+                timeout=30,
+            )
+    except asyncio.TimeoutError:
+        logger.warning("ask timeout ip=%s question_len=%d", ip, len(question))
+        return _err("timeout", "The answer took too long. Try again.", 504)
+    except Exception as exc:
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        if status in (401, 403):
+            return _err("llm_unavailable", "Live answering is unavailable right now.", 503)
+        logger.error("ask error type=%s ip=%s", type(exc).__name__, ip)
+        return _err("internal_error", "Something went wrong. Try again shortly.", 500)
+
+    duration_ms = int((time.perf_counter() - t0) * 1000)
+    # Log only metadata — never the question text or map content (US-16 / privacy)
+    logger.info(
+        "ask status=200 ip=%s question_len=%d node_ids=%d citations=%d dropped=%d duration_ms=%d",
+        ip, len(question), len(result.node_ids), len(result.citations),
+        result.dropped_citations, duration_ms,
+    )
+    return result

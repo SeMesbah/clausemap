@@ -5,7 +5,7 @@
  * Env var: VITE_API_BASE_URL  (e.g. https://clausemap-api.fly.dev)
  * Falls back to the same origin when the var is not set.
  */
-import type { MapResult } from "./types";
+import type { AskResponse, MapResult } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined ?? "").replace(/\/$/, "");
 
@@ -100,4 +100,36 @@ export async function createMap(file: File): Promise<MapResult> {
   }
 
   return (await res.json()) as MapResult;
+}
+
+// ---------------------------------------------------------------------------
+// ask
+// ---------------------------------------------------------------------------
+
+export async function ask(question: string, map: MapResult): Promise<AskResponse> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/api/v1/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, map }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new ApiError("timeout", "The answer took too long. Try again.");
+    }
+    throw new ApiError("network_error", "Could not reach the server. Check your connection.");
+  }
+
+  if (!res.ok) {
+    throw await _parseError(res);
+  }
+
+  return (await res.json()) as AskResponse;
 }

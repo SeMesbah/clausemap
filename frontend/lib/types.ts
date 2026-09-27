@@ -67,3 +67,20 @@ export interface ApiError {
     message: string;
   };
 }
+
+// ---------------------------------------------------------------------------
+// Ask — contract v1.1
+// ---------------------------------------------------------------------------
+
+export interface AskCitation {
+  page: number;
+  quote: string;
+}
+
+export interface AskResponse {
+  answer: string;
+  node_ids: string[];
+  edge_ids: string[];
+  citations: AskCitation[];
+  dropped_citations: number;
+}
