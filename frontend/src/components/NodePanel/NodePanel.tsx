@@ -1,33 +1,9 @@
 /**
  * NodePanel — shows a selected node's type, aliases, linked nodes and evidence.
- *
- * Props:
- *   map      — the full MapResult (needed to build the links list)
- *   nodeId   — the selected node id, or null
- *   onSelect — called when the user clicks a linked node
- *   onClose  — called when the user dismisses the panel
  */
 import { useState } from "react";
 import type { MapResult, Node, Edge, Evidence } from "../../../lib/types";
-
-// ---------------------------------------------------------------------------
-// Colour per type (matches MapGraph)
-// ---------------------------------------------------------------------------
-const TYPE_COLOR: Record<string, string> = {
-  party: "#2F5D8A",
-  obligation: "#C8501C",
-  date: "#2A7A74",
-  amount: "#9A6B12",
-  topic: "#6E7378",
-};
-
-const TYPE_LABEL: Record<string, string> = {
-  party: "Party",
-  obligation: "Obligation",
-  date: "Date",
-  amount: "Amount",
-  topic: "Topic",
-};
+import { TYPE_COLOR, TYPE_LABEL } from "../../theme";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -79,7 +55,7 @@ function LinkItem({ relation, direction, otherLabel, otherId, onSelect }: LinkIt
   const arrow = direction === "out" ? "→" : "←";
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 8, fontSize: 13 }}>
-      <span style={{ color: "#B9B4A8", flexShrink: 0, marginTop: 1 }}>{arrow}</span>
+      <span style={{ color: "#5B6570", flexShrink: 0, marginTop: 1 }}>{arrow}</span>
       <span style={{ color: "#5B6570", flexShrink: 0 }}>{relation}</span>
       <button
         onClick={() => onSelect(otherId)}
@@ -103,7 +79,7 @@ function LinkItem({ relation, direction, otherLabel, otherId, onSelect }: LinkIt
 interface Props {
   map: MapResult;
   nodeId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
   onClose: () => void;
 }
 

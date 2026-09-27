@@ -3,6 +3,8 @@ Full pipeline: bytes → MapResult.
 """
 from __future__ import annotations
 
+import time
+
 from app.errors import LLMUnavailableError
 from app.extract import extract_all
 from app.merge import build_map
@@ -24,6 +26,7 @@ async def run_pipeline(data: bytes, title: str) -> MapResult:
     Raises LLMUnavailableError when every page fails due to an auth / quota issue.
     Adds a warning for every page that returned an empty extraction.
     """
+    t0 = time.perf_counter()
     pages = extract_pages(data)
 
     try:
@@ -36,15 +39,15 @@ async def run_pipeline(data: bytes, title: str) -> MapResult:
     # If every page produced an empty extraction, check whether it looks like
     # an LLM auth/quota problem vs. a content problem.
     text_pages = [p for p in pages if p.strip()]
-    all_empty = all(not e.items and not e.relations for e in extractions)
-    if text_pages and all_empty:
+    all_failed = all(e.failed for e in extractions)
+    if text_pages and all_failed:
         # Treat as LLM unavailable — the caller will surface a clear 503.
         raise LLMUnavailableError("All pages returned empty extractions")
 
     # Detect failed pages: empty extraction on a page that had text
     failed: list[int] = []
     for i, (page_text, ext) in enumerate(zip(pages, extractions)):
-        if page_text.strip() and not ext.items and not ext.relations:
+        if page_text.strip() and ext.failed:
             failed.append(i + 1)  # 1-based
 
     result = build_map(pages, extractions, title)
@@ -61,4 +64,8 @@ async def run_pipeline(data: bytes, title: str) -> MapResult:
             update={"warnings": list(result.warnings) + extra_warnings}
         )
 
-    return result
+    # build_map only times the merge; report the whole run, LLM calls included.
+    duration_ms = int((time.perf_counter() - t0) * 1000)
+    return result.model_copy(
+        update={"stats": result.stats.model_copy(update={"duration_ms": duration_ms})}
+    )

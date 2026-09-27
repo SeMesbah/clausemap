@@ -44,7 +44,7 @@ export default function StepsLog({ steps }: Props) {
               <span style={{
                 fontFamily: '"IBM Plex Mono", monospace',
                 fontSize: 11,
-                color: "#B9B4A8",
+                color: "#5B6570",
                 flexShrink: 0,
                 minWidth: 42,
                 textAlign: "right",

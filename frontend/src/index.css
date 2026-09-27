@@ -13,11 +13,7 @@
   --color-date: #2A7A74;
   --color-amount: #9A6B12;
   --color-topic: #6E7378;
-
-  /* Clausemap fonts */
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --font-serif: "Source Serif 4", Georgia, serif;
+  --color-error: #A1302A;
 }
 
 @layer base {
@@ -47,69 +43,44 @@
   --date: #2A7A74;
   --amount: #9A6B12;
   --topic: #6E7378;
-
-  --text: var(--ink);
-  --text-h: var(--ink);
-  --bg: var(--paper);
-  --border: var(--contour);
-  --code-bg: #f4f3ec;
-  --accent: var(--stake);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: "IBM Plex Sans", system-ui, sans-serif;
-  --heading: "IBM Plex Sans", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-  --serif: "Source Serif 4", Georgia, serif;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  --error: #A1302A;
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
   min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 600;
-  color: var(--text-h);
+/* Panel slide-in animation */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
+.panel-in {
+  animation: panel-in 180ms ease-out;
 }
 
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
+@media (prefers-reduced-motion: reduce) {
+  .panel-in {
+    animation: none;
+  }
 }
 
-p {
-  margin: 0;
+/* Page entry animation */
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
 }
 
-code {
-  font-family: var(--mono);
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-  border-radius: 4px;
-  color: var(--text-h);
+.page-in {
+  animation: page-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-in {
+    animation: none;
+  }
 }

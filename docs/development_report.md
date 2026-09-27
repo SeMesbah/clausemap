@@ -5,10 +5,10 @@
 | Item | Value |
 |---|---|
 | Time | TBD |
-| LLM provider | TBD |
-| LLM model (`LLM_MODEL`) | TBD |
+| LLM provider | OpenRouter (OpenAI-compatible, `LLM_BASE_URL`) |
+| LLM model (`LLM_MODEL`) | `openai/gpt-4o-mini` (free-tier credit too low for gpt-4o) |
 | RPM limit | TBD |
-| `EXTRACT_CONCURRENCY` set to | TBD |
+| `EXTRACT_CONCURRENCY` set to | 5 |
 | Backend host | TBD |
 | Backend URL | TBD |
 | Host max request duration | TBD |

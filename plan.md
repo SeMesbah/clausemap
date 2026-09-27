@@ -29,7 +29,9 @@
 | 12:50–13:30 | **A2** Verify, merge, assemble map JSON | **B2** Node panel and explore |
 | 13:30–14:00 | **A3** API, limits, demo cache, deploy | **B3** Upload flow and API client |
 | 14:00–14:30 | **Phase I, together:** connect, deploy, test on the live URL, freeze | |
-| 14:30–16:15 | **Phase S:** README, slides, Bob evidence | **Phase S:** video, cover image |
+| 14:45–15:45 | **Phase S:** README, slides, Bob evidence; 15:15 U2 gate | **U1** UI polish and living map (time-boxed) |
+| 15:45–16:15 | **Phase S:** finish; U2 backend only if the gate said go | **Phase S:** record product footage, video, cover image |
+| after 16:30 | **U2** Ask the map: backend | **U2** Ask the map: frontend |
 | 16:15–16:30 | Submit (one person), the other checks the link | |
 
 **Assumptions (change them if wrong)**
@@ -557,6 +559,171 @@ Contract rules:
 
 ---
 
+### Phase U1: UI polish and a living map (Dev B, 14:45–15:45, time-boxed)
+
+*Added 14:40 after a UI review. Decisions: time-boxed today, keep the brand guide as the source of truth, "dynamic" = motion on the map + richer interaction + a livelier upload page. This phase moves the Phase S video recording to 15:45 (see the updated timeline).*
+
+**Goal:** the map feels alive and obviously interactive in the video, fits the brand, and has no visible leftovers from the template or the old DocVerse theme.
+
+**What's wrong today (the review, so the tasks make sense):**
+1. `#root { width: 1126px }` (Vite template, `src/index.css`) squeezes the map into a centred strip on wide screens.
+2. No way back to the home page from the map.
+3. `MapGraph` destroys and rebuilds cytoscape on every filter / "Show N more" click with `randomize: true`: every node jumps, zoom and pan are lost.
+4. The graph never calls `cy.resize()`, so opening "How this map was made" shifts the header and misaligns clicks.
+5. Contour `#B9B4A8` used for text (1.9:1): privacy line, not-legal-advice notice (US-19), "or try a demo", step timings. The brand guide says Contour is never text.
+6. Errors shown in Stake Orange, which means "verified / look here" everywhere else.
+7. Emoji (📄, 🏷) and legend glyphs (⬡, ▬) that don't match the shapes drawn on the map. Favicon is still the purple Vite logo.
+8. Header stacks 9 things above the graph; legend and filter chips repeat the same 5 types in two rows.
+9. Empty right panel (35% of the screen) until the first click; relations invisible on the map until a click.
+10. Inline `style={{}}` everywhere, so there are no hover or focus states; Tailwind brand tokens in `index.css` are unused; type colours copied into 4 files.
+11. Dead DocVerse code: `src/App.css`, `components/ChatBox`, `components/GraphCanvas`, `components/UploadScreen`, `NodePanel.module.css`, `assets/hero.png`, `react.svg`, `vite.svg`.
+12. Stats say "nodes · links" instead of the reader's words (parties, obligations, deadlines).
+
+**MVP definition:** on the deployed site, the map fills the screen, draws itself with an animated layout, highlights a node's neighbours and relation labels on hover, flies to a clicked node, and filters without nodes jumping. The home page accepts drag-and-drop and shows a step-by-step progress with a timer. No Contour-coloured text, no emoji, no dead files.
+
+**Test plan:**
+- At 1920 px wide, the graph + panel fill the full width.
+- Open demo 1: nodes animate into place within ~1 s; the main parties are visibly the largest nodes.
+- Hover a party: every node except it and its direct neighbours fades; the edges to its neighbours show their relation text (e.g. "must deliver").
+- Click an obligation: the camera glides to centre it; the panel content slides in; clicking the empty canvas deselects.
+- Toggle the "Dates" chip off and on, then "Show N more" and "Show overview": nodes that stay visible don't jump; zoom is kept.
+- Expand "How this map was made", then click a node: the click lands on the node you clicked.
+- Type part of a party alias (e.g. "Supplier") into search, press Enter: that node is selected and centred.
+- Clausemap wordmark on the map page returns to the home page; demo 2 then opens normally.
+- Home: drag a PDF over the upload box, and the box changes style; drop it and the stepper appears with a running `m:ss` timer. Drop a `.txt`, and the "Please choose a PDF file." error appears in the error style, not orange.
+- Tab through the home page: every button and the upload box shows a visible focus ring.
+- With macOS "Reduce motion" on, the map appears without animation.
+- `grep -rn "B9B4A8" frontend/src` only matches graph/divider styles, never a text `color`.
+- Verification Runs 1, 4 and 6 still pass.
+
+**Tasks** (in this order; the order is the priority, stop where the clock says):
+
+*Step 1: fixes and cleanup (14:45–15:00)*
+- [ ] (S) Commit the current working tree, then `git tag pre-ui && git push --tags`. This is the rollback point for the fork below.
+- [ ] (S) In `frontend/src/index.css`, delete the Vite template rules: the `#root` block (keep only `#root { min-height: 100svh; }`), the `h1`, `h2`, `p` and `code` blocks and the `font: 18px/145%` line in `:root`. Keep the `@theme` tokens and the `--` variables. Add to `@theme`: `--color-error: #A1302A;` (brick red, ~6:1 on paper; used only for errors).
+- [ ] (S) Delete the dead files: `src/App.css`, `src/components/ChatBox/`, `src/components/GraphCanvas/`, `src/components/UploadScreen/`, `src/components/NodePanel/NodePanel.module.css`, `src/assets/hero.png`, `src/assets/react.svg`, `src/assets/vite.svg`. Run `npm run build`; it must pass. (Phase U2 rebuilds chat from scratch on the brand.)
+- [ ] (S) Create `frontend/src/theme.ts` exporting `TYPE_COLOR`, `TYPE_LABEL` (plural too: "Parties", "Obligations", "Dates", "Amounts", "Topics") and `TYPE_SHAPE` (cytoscape shape names). Replace the local copies in `MapGraph.tsx`, `NodePanel.tsx`, `Legend.tsx` and `MapPage.tsx` with imports.
+- [ ] (S) Replace every text `color: "#B9B4A8"` with `#5B6570` (slate): privacy line and divider label in `HomePage.tsx`, legal notice in `MapPage.tsx`, timings in `StepsLog.tsx`. Keep `#B9B4A8` for borders, dividers and graph edges only.
+- [ ] (S) Error boxes (`HomePage.tsx` and the error state in `MapPage.tsx`): ink text `#1C2B39` on `#FBEFEC`, 3 px left border `var(--color-error)`. No orange.
+- [ ] (S) Replace `frontend/public/favicon.svg` with the brand trig mark: a solid `#C8501C` triangle above three short `#1C2B39` horizontal lines, 32×32 viewBox.
+- [ ] (S) Map header: add a small "clausemap" wordmark (Plex Sans SemiBold, slate, lowercase) left of the title as a button that calls `clearMap()` then the new `onNavigateHome` prop. In `App.tsx`, also clear the `?source=` query with `history.replaceState` when going home.
+- [ ] (S) Replace `statsLine` with the reader's words, built from counts per type: `4 parties · 18 obligations · 7 dates · 5 amounts · 20 pages` in Plex Mono, and, if any, a separate slate line: `3 items left off the map: their quotes weren't found on the cited page.`
+
+*Step 2: the living map (15:00–15:25)*
+- [ ] (M) Rewrite `MapGraph.tsx` so cytoscape is created **once** per map with **all** nodes and edges. New props: `nodes`, `edges` (the full map), `visibleIds: Set<string>`, `selectedId: string | null`, `onSelect(id: string | null)`. When `visibleIds` changes, add class `hidden` (`display: none`) to the rest and re-run fcose on `cy.elements(':visible')` with `randomize: false, animate: true, animationDuration: 400, fit: false`. First layout only: `randomize: true, animate: true, animationDuration: 800, animationEasing: "ease-out-cubic"`, then `cy.fit(undefined, 40)`. In `MapPage.tsx`, pass the full map and compute `visibleIds` from the type filter + overview / show-all.
+- [ ] (S) Node size by importance: `width` and `height` = `mapData(mentions, 1, <max mentions in map>, 22, 56)`. Labels: `text-wrap: "ellipsis"`, `text-max-width: "120px"`, `min-zoomed-font-size: 8` (labels hide when zoomed far out instead of overlapping).
+- [ ] (S) Hover: on `mouseover` a node, add class `faded` (`opacity: 0.15`) to all elements outside `node.closedNeighborhood()`, and class `labelled` to its edges; remove both on `mouseout`. Styles: `edge.labelled, edge.selected { label: data(relation); font-size: 10px; color: #5B6570; text-rotation: autorotate; text-background-color: #F6F3EC; text-background-opacity: 1; text-background-padding: 2px }`. Put `relation` into each edge's `data`. Add `transition-property: opacity; transition-duration: 150ms` to nodes and edges.
+- [ ] (S) Selection: when `selectedId` changes, keep the orange border and edges, fade non-neighbours to `opacity: 0.35`, and `cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 1.1) }, { duration: 400, easing: "ease-in-out-cubic" })`. Tap on the background → `onSelect(null)`.
+- [ ] (S) `ResizeObserver` on the container that calls `cy.resize()`; disconnect on unmount.
+- [ ] (S) Zoom controls overlaid bottom-right of the graph: three 32 px buttons "+", "−", "Fit" (paper background, contour border, ink text, hover: ink border), each animating zoom/fit over 250 ms.
+- [ ] (S) If `window.matchMedia("(prefers-reduced-motion: reduce)").matches`, pass `animate: false` and use `duration: 0` everywhere.
+
+*Step 3: header and panel (15:25–15:35)*
+- [ ] (S) Create `components/TypeFilter/TypeFilter.tsx` to replace both `Legend.tsx` and the chip row. One chip per type: a 12 px inline SVG of the real shape (circle, rounded rectangle, diamond, hexagon, tag) in the type colour, the plural label and the count in Plex Mono (`Dates 7`). On: tinted background + coloured border; off: slate text, contour border, shape outlined. `aria-pressed`, hover (border ink), focus ring. Delete `Legend.tsx`.
+- [ ] (S) Slim header: row 1 = wordmark · document title · stats (+ "Showing a saved result." as a small slate badge if `fromFallback`). Row 2 = `TypeFilter` · a search input · "Show N more / Show overview". Move `StepsLog` and `map.warnings` into the panel summary (next task). Move the legal notice to a one-line slate footer under the graph, 12 px, always visible (US-19).
+- [ ] (S) Search: an `<input list="node-options">` with a `<datalist>` of every node label and alias (placeholder "Find a party, date, amount…"). On Enter or when the value exactly matches an option, `onSelect` that node; if its type is filtered out, turn that type back on first.
+- [ ] (S) Replace the panel empty state with `DocSummary`: document title and page count; counts per type; the parties as buttons that select them; the "items left off the map" line if any; `StepsLog`; warnings. End with the hint "Hover to trace links. Click for the exact lines."
+- [ ] (S) Panel motion: wrap the panel body in `<div key={nodeId ?? "summary"} className="panel-in">` with `@keyframes panel-in { from { opacity: 0; transform: translateX(8px) } }`, 180 ms ease-out, in `index.css`, disabled under `@media (prefers-reduced-motion: reduce)`. Narrow layout: after selection, `panelRef.current?.scrollIntoView({ behavior: "smooth" })`.
+
+*Step 4: a livelier home page (15:35–15:45)*
+- [ ] (S) Upload box: add `onDragOver` (preventDefault, set `dragging`), `onDragLeave`, `onDrop` (take `e.dataTransfer.files[0]` → `handleFile`). Dragging style: Stake Orange dashed border and a light Highlighter tint. Hover: ink border. Focus: 2 px ink outline. Copy: "Drop a PDF here or choose a file". Replace 📄 with an inline SVG page outline with a small orange triangle on the fold (brand logo direction 3), 32 px.
+- [ ] (S) Progress stepper: replace the single cycling line with the 5 `PROGRESS_MSGS` as a vertical list. Advance every 12 s and **stop on the last step** (no looping). Done steps: slate text with ✓; current step: ink SemiBold with a pulsing 8 px orange dot; next steps: slate. Under it, a running timer `0:37` in Plex Mono and "Usually 30–90 seconds." The steps are time-based, so don't call them live progress anywhere.
+- [ ] (S) Demo buttons: hover (ink border, `box-shadow: 0 2px 8px rgb(28 43 57 / 0.08)`, `translateY(-1px)`, 120 ms) and focus ring. Use Tailwind classes (`hover:`, `focus-visible:`) on the elements you touch in this phase instead of inline styles. Don't convert untouched components.
+- [ ] (S) Page entry: `.page-in` class on the root of `HomePage` and `MapPage` (`opacity 0 → 1`, 200 ms), disabled under reduced motion.
+
+*Wrap-up (15:45)*
+- [ ] (S) `npm run build`, push, confirm the Vercel deploy, run the test plan on the deployed URL (laptop only; phone just checks nothing scrolls sideways at 390 px).
+- [ ] (S) [WARGAME] Before pushing Step 2, open `?source=fixture&file=demo-1` and toggle each chip 5 times quickly: no console errors, no duplicate graph, memory steady in DevTools. (Rapid layout runs can pile up; call `layout.stop()` on the previous layout before starting a new one.)
+
+**Scalability notes:** creating cytoscape once and hiding elements instead of rebuilding makes filtering O(changed nodes) and keeps 150+ node maps smooth. `min-zoomed-font-size` keeps dense maps readable. No new network requests.
+
+**Security checklist:**
+- [ ] Node labels, aliases and relations still rendered as text (cytoscape labels and React text); no `dangerouslySetInnerHTML` (A03). Verification Run 6 re-run.
+- [ ] Drag-and-drop goes through the same `handleFile` checks (type, 10 MB) as the file picker (A04).
+
+**Definition of Done:**
+- [ ] Steps 1–4 checked (or cut per the fork below, noted in the report)
+- [ ] Test plan passes on the deployed URL
+- [ ] `docs/development_report.md` updated with what was cut
+- [ ] Bob screenshots saved
+
+#### Risk Audit
+
+| Move/Task | Expected Observation | Likely Failure | Causal Action | Counter-Move | Prevention (added to plan) |
+|---|---|---|---|---|---|
+| Rewrite `MapGraph` | Filters keep positions | [HIGH] Graph breaks or goes blank 20 minutes before recording | Largest change of the phase, done after the freeze | Restore `MapGraph.tsx` and `MapPage.tsx` from `pre-ui` | `pre-ui` tag + 15:25 fork |
+| Animated layouts | Smooth re-layout on filter | [MED] Overlapping layout runs on quick clicks → jitter, console errors | No `layout.stop()` | Stop previous layout | [WARGAME] 5× toggle check |
+| Video schedule | Product footage recorded 15:45–16:05 | [HIGH] UI work overruns and eats the video (Abort Condition 7 at 16:10) | Polishing past the time box | Record on whatever is deployed at 15:45 | Hard stop at 15:45; 14:30 backup take still exists |
+| Progress stepper | Steps advance, stop at the last one | [MED] A judge reads time-based steps as live progress | Fake precision | Neutral wording | "Usually 30–90 seconds", no "live" claim |
+| Dead-code delete | Build still passes | [LOW] Something imported a deleted file | Hidden import | Restore the file from `pre-ui` | `npm run build` right after deleting |
+| Contrast fix | Legal notice readable | [LOW] Notice moved to footer, then scrolled off on small screens | Footer below a fixed-height graph | Keep footer inside the viewport column | Footer is part of the flex column, not the page scroll |
+
+**Security:** text rendering unchanged; drop uses the same checks. **Scalability:** create-once graph. **Data integrity:** stats counts come from `map.nodes`, not recomputed guesses. **UX:** reduced motion, focus rings, contrast. **Operational:** rollback tag.
+**Fork trigger:** at **15:25**, if the new `MapGraph` isn't working with filters and selection, `git checkout pre-ui -- frontend/src/components/MapGraph/MapGraph.tsx frontend/src/pages/MapPage.tsx`, keep Step 1, do Steps 3–4 on the old graph, and add only the hover highlight + `cy.resize()` to the old `MapGraph`. At **15:45**, stop whatever state it's in; if the deployed site is worse than `pre-ui`, redeploy `pre-ui` and record.
+
+---
+
+### Phase U2: "Ask the map" chat (US-11) (Dev A backend + Dev B frontend, gated)
+
+*Added 14:40. Decision: build chat. Honest scheduling: both devs are on the submission until 16:30, so the frontend half runs after submission. The backend half can start today only if the gate below says go.*
+
+**Goal:** an analyst asks a question ("What does the Supplier owe by 30 June?") and gets a short answer where every sentence cites a verified quote from the map, and the nodes and links involved light up on the graph as a path.
+
+**Design (keeps two promises: "Nothing is kept" and "Verbatim or nothing"):** the backend stores no documents, so the frontend sends the question **together with the current `MapResult`**. The LLM answers only from the map's nodes, edges and evidence. The backend then checks that every cited quote is exactly an evidence quote in the map, and drops any that aren't. No new storage, no embeddings, no RAG index.
+
+**Contract addition (append to `docs/contract.md` as v1.1; v1 stays valid):**
+- `POST /api/v1/ask` with body `{ "question": string (1–300 chars), "map": MapResult }`, 2 MB max.
+- 200: `{ "answer": string, "node_ids": string[], "edge_ids": string[], "citations": [{ "page": number, "quote": string }], "dropped_citations": number }`.
+- Errors in the existing `{ "error": { code, message } }` format: `question_invalid`, `map_invalid`, `llm_unavailable`, `rate_limited`.
+
+**Gate (decide together at 15:15):** Dev A starts the backend today only if the README is done and the submission form is filled. Otherwise U2 starts after 16:30. Chat is **not** in today's video unless both halves are deployed and pass the test plan by 15:45 (they won't be; plan for after).
+
+**Test plan:**
+- On demo 1, ask "What must the Supplier deliver and by when?": the answer names the delivery obligation and its date; each citation shows `p. N`; the obligation, the Supplier and the date node light up with the edges between them.
+- Every returned `node_ids` / `edge_ids` exists in the map; every citation quote is character-for-character an evidence quote in the map (backend unit test).
+- Ask "What is the weather in Paris?": the answer says the document doesn't cover it, with no citations and nothing highlighted.
+- Ask with a question containing `<img src=x onerror=alert(1)>`: shown as text.
+- A 7th question in 10 minutes from the same IP gets `rate_limited`.
+
+**Tasks:**
+- [ ] (S) **Dev A:** add `AskRequest` / `AskResponse` Pydantic models to `backend/app/schemas.py` (reuse `MapResult`; `question` stripped, 1–300 chars).
+- [ ] (M) **Dev A:** create `backend/app/ask.py` with `async def answer(question, map) -> AskResponse`: build a compact context (for each node: id, type, label, aliases, evidence quotes with page; for each edge: id, source, relation, target), call the same client as `extract.py` (`_build_client`, `LLM_MODEL`, JSON output) with a system prompt: "Answer only from the items given. Cite quotes exactly as given. Return the ids of the nodes and edges your answer uses. If the items don't answer the question, say so in one sentence and return empty lists." Truncate the context to ~60k characters, most-connected nodes first.
+- [ ] (S) **Dev A:** in `ask.py`, verify the answer: keep only `node_ids` / `edge_ids` present in the map and only citations whose `(page, quote)` equals an evidence item in the map; count the rest in `dropped_citations`.
+- [ ] (S) **Dev A:** add `POST /ask` to `backend/app/router.py`, reusing the rate limiter (separate bucket: 6 per 10 minutes), `_PIPELINE_SEM`, a 30 s timeout and the error helpers. Log only method, status, duration, question length, never the question text or map content.
+- [ ] (S) **Dev A:** `backend/tests/test_ask.py`: verification drops an invented quote and an unknown node id (mock the LLM call).
+- [ ] (S) **Dev B:** add `ask(question, map)` to `frontend/lib/api.ts` (30 s timeout, same `ApiError` handling) and the `AskResponse` type to `lib/types.ts`.
+- [ ] (M) **Dev B:** create `components/AskBox/AskBox.tsx` on the brand (paper, ink, Plex Sans; no purple): a one-line input "Ask about this document…" with a send button, pinned at the bottom of the panel; the answer in Plex Sans 14 px; each citation as a Highlighter quote in Source Serif with `p. N · verified` (reuse `EvidenceItem` from `NodePanel`); "N quotes left out: not found on the map" if `dropped_citations > 0`; a "Clear" link. Keep the last 5 Q&As in component state only (nothing stored).
+- [ ] (S) **Dev B:** add a `highlightIds: Set<string>` prop to `MapGraph`: those nodes and edges get the orange border / line and a 2 px halo, everything else fades to 0.2, and the camera fits the highlighted set over 400 ms. Clicking any node or "Clear" removes the highlight.
+- [ ] (S) **Dev B:** while waiting, show "Reading the map…" with the pulsing dot from the upload stepper; errors in the U1 error style.
+
+**Scalability notes:** stateless: the map travels with each request (a 45-node map is ~40 KB), so any backend instance can answer. For maps over ~150 nodes, the 60k-character context cap kicks in; the real fix later is server-side retrieval over evidence (⚠️ DEBT).
+
+**Security checklist:**
+- [ ] `map` in the request is validated by `MapResult` and capped at 2 MB (A04); question length capped.
+- [ ] Prompt injection: quotes from the document are data inside the context, and the verification step means an injected instruction can't add an invented quote or an unknown node (A03).
+- [ ] Rate limited and behind the semaphore (A04); no question text in logs (privacy, US-16).
+- [ ] Answer and citations rendered as React text (A03).
+
+**Definition of Done:**
+- [ ] All tasks checked
+- [ ] Test plan passes on the deployed URLs
+- [ ] `docs/contract.md` v1.1 section written; `docs/development_report.md` updated
+- [ ] README "What it does" mentions "Ask the map", with the verification rule
+
+#### Risk Audit
+
+| Move/Task | Expected Observation | Likely Failure | Causal Action | Counter-Move | Prevention (added to plan) |
+|---|---|---|---|---|---|
+| Doing chat today | Submission unaffected | [CRIT] Chat work eats the README/video time and the submission slips | A new feature after the freeze | Stop U2, submit | 15:15 gate; frontend half after 16:30 |
+| LLM answer | Every sentence cited | [HIGH] The model paraphrases a quote, so it isn't verbatim | LLMs rewrite text | Drop it, count it, show the count | Exact-match verification step |
+| Prompt injection via the document | Normal answer | [MED] A clause saying "ignore previous instructions" changes the answer | Document text in the prompt | Verification limits the damage to wording, never to citations | System prompt + verification |
+| Request size | Fast responses | [MED] A 300-node map + long evidence exceeds the model context | Sending everything | Truncate by importance | 60k-character cap |
+| Privacy claim | "Nothing is kept" still true | [MED] The question gets logged | Default request logging | Remove from logs | Log only lengths and status |
+
+**Security:** validation, rate limit, injection containment, no logging of content. **Scalability:** stateless, capped context. **Data integrity:** exact-match citations. **UX:** clear "not in this document" answer. **Operational:** after-submission scheduling.
+
+---
+
 ### Phase S: Submission package (both, 14:30–16:30)
 
 **Goal:** a complete, eligible submission by 16:30 (US-14, US-15).
@@ -575,7 +742,7 @@ Contract rules:
 - [ ] (S) **Dev B:** make the cover image per the brand guide: Chart Paper background, a clean map of 8–12 nodes on the left, the trig mark and the tagline "See the whole deal. Cite every line." on the right.
 - [ ] (S) **Dev A:** make the repo public only after the Phase I secret scan passed.
 - [ ] (S) **Whoever owns the lablab account:** submit by 16:30; the other person opens the submission page and confirms every item is there.
-- [ ] (S) [WARGAME] **Dev B:** record the product segments of the video first (14:35–15:05), before the voice-over and editing, so a later breakage can't cost the footage. If the live upload fails during recording, use a demo and say "a saved result" in the voice-over.
+- [ ] (S) [WARGAME] **Dev B:** record the product segments of the video first (15:45–16:05, right after Phase U1; the 14:30 backup take covers a U1 failure), before the voice-over and editing, so a later breakage can't cost the footage. If the live upload fails during recording, use a demo and say "a saved result" in the voice-over.
 - [ ] (S) [WARGAME] **Submitter:** at 15:00, open the lablab submission form and fill in everything that's ready (title, description, repo link, demo link). If the form can be saved or edited before the deadline, save it now; otherwise keep the text in `docs/submission.md` ready to paste.
 - [ ] (S) [WARGAME] **Both:** before uploading any screenshot or the video, check every frame that shows Bob, a terminal or an editor for API keys, `.env` contents or tokens. Re-take anything that shows one.
 - [ ] (S) [WARGAME] **Dev A:** make sure README, slides and video say "Nothing is kept after your map is built", not "never written to disk" (see A3).
@@ -668,6 +835,7 @@ Strategic tripwires. When one fires, stop and decide together; don't just retry.
 5. **Any time — a real API key appears in git history, a screenshot or the video.** → Rotate the key at the provider immediately, update the host's env var, and don't make the repo public until the history is clean (fastest: create a fresh repo from the current files, without history, after the scan passes).
 6. **Any time — the LLM provider is down or out of credits and can't be fixed in 10 minutes.** → Demo only the cached maps, disable nothing, and say in the video and README that live mapping needs the provider.
 7. **16:10 — the video isn't uploaded.** → Upload the 14:30 backup take with a title card, and submit.
+8. **15:45 — Phase U1 left the deployed site worse than before** (blank graph, console errors, broken demo). → Redeploy the `pre-ui` tag, record on it, and list U1 as post-hackathon work. Don't debug past 15:50.
 
 ## 8. Verification Runs
 
@@ -682,3 +850,5 @@ Run the ones that apply before marking any phase done. "Pass" is stated for each
 7. **No secrets, no document text (I, S).** Secret scan per Phase I; backend logs from the last upload contain only method, path, status, duration and page count; every screenshot and video frame checked. **Pass:** nothing found.
 8. **Copy check (B3, I, S).** `grep -rn "\[provider\|\[demo" frontend/app frontend/components` prints nothing; the upload line, README and slides all say "Nothing is kept after your map is built". **Pass:** no placeholders, consistent claim.
 9. **Submission (S).** Every item in `docs/submission.md` has a link or file name; the demo link opens without login in a private window; the video plays to the end. **Pass:** confirmed on the lablab page before 16:30.
+10. **Living map (U1).** On demo 1: hover 3 nodes, click 3, toggle every type chip twice, search one alias, use +/−/Fit, go home and open demo 2. **Pass:** no node jumps on filter, relation labels appear on hover, clicks land where clicked, no console errors; `grep -rn "B9B4A8" frontend/src` has no text-colour hit.
+11. **Ask the map (U2).** Ask 3 in-scope questions and 1 off-topic one on each demo. **Pass:** every citation is an exact evidence quote with its page; highlighted ids exist; the off-topic one returns no citations; no question text in backend logs.

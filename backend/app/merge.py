@@ -50,11 +50,12 @@ def _strip_punct(s: str) -> str:
 
 
 def _label_core(label: str) -> str:
-    """Normalised label with leading 'the', punctuation and whitespace removed."""
+    """Normalised label with leading 'the' or honorific, punctuation and whitespace removed."""
     s = normalize(label)
     s = _strip_punct(s)
     s = re.sub(r"\s+", " ", s).strip()
     s = re.sub(r"^the\s+", "", s)
+    s = re.sub(r"^(mr|mrs|ms|miss|dr|prof)\s+", "", s)
     return s
 
 
@@ -77,8 +78,12 @@ def _core_without_suffix(core: str) -> str:
     return core
 
 
-def _merge_key(item_type: str, label: str) -> str:
-    """Primary merge key: type + full normalised label core (suffix kept).
+def _merge_key(label: str) -> str:
+    """Primary merge key: full normalised label core (suffix kept).
+
+    Type is deliberately NOT part of the key: the model often types the same
+    thing differently on different pages ("Principal" as topic and amount),
+    and those must still merge. The node's type is decided by _group_type.
 
     Keeping the suffix in the key means "Acme Holdings Inc." and
     "Acme Holdings Ltd." land in separate primary buckets and are only
@@ -86,7 +91,40 @@ def _merge_key(item_type: str, label: str) -> str:
     suffix-compatibility rule.  "Acme Holdings" (no suffix) gets its own
     bucket and is merged with Inc. via the cross-match.
     """
-    return f"{item_type}|{_label_core(label)}"
+    return _label_core(label)
+
+
+# Tie-break order when a merged node's mentions disagree on type
+_TYPE_PRIORITY = ["party", "obligation", "amount", "date", "topic"]
+
+
+def _group_type(items: list[tuple[int, PageItem]]) -> str:
+    """Majority type across a merged node's mentions (tie → _TYPE_PRIORITY)."""
+    counts: dict[str, int] = defaultdict(int)
+    for _, it in items:
+        counts[it.type] += 1
+    return max(counts, key=lambda t: (counts[t], -_TYPE_PRIORITY.index(t)))
+
+
+# Words too generic to show that a quote names a particular node
+_NAME_STOPWORDS = {
+    "the", "of", "and", "a", "an", "to", "for", "in", "on", "by", "at", "with",
+    "from", "or", "eur", "euro", "euros", "day", "days", "date",
+}
+
+
+def _quote_names(quote: str, names: set[str]) -> bool:
+    """True if the quote contains a significant word of any of the node's names.
+
+    Guards against the model wiring a relation to the wrong local_id: the
+    quote is real, but it doesn't mention one of the two ends.
+    """
+    words = set(_strip_punct(normalize(quote)).split())
+    for n in names:
+        for w in n.split():
+            if len(w) >= 3 and w not in _NAME_STOPWORDS and (w in words or w + "s" in words):
+                return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -138,7 +176,7 @@ def build_map(
         page_num = page_idx + 1
         page_text = pages[page_idx] if page_idx < len(pages) else ""
 
-        if not ext.items and not ext.relations:
+        if ext.failed:
             failed_pages.append(page_num)
             continue
 
@@ -160,13 +198,23 @@ def build_map(
     # -----------------------------------------------------------------------
     # 2 & 3. Merge items
     #
-    # Strategy:
-    #   a) Assign each item a primary key = type + label-core-without-suffix.
-    #   b) First pass: group by primary key → cluster list.
-    #   c) Second pass: also merge clusters where one's label or safe alias
-    #      equals another's label or safe alias after normalisation.
-    #      BUT: two items whose labels BOTH have company suffixes, and the
-    #      suffixes differ, are never merged.
+    # Staged, so one bad alias from the model can't chain unrelated nodes
+    # together:
+    #   a) Group items whose normalised label is identical, regardless of type
+    #      (the model may call the same thing a topic on one page and an
+    #      amount on another).
+    #   b) Union groups whose LABELS match once company suffixes are stripped
+    #      ("Acme Holdings" ↔ "Acme Holdings Inc."). Two labels that BOTH have
+    #      company suffixes, and the suffixes differ, are never merged.
+    #   c) A one-word party label ("Hoek", "Harbourlight") joins the single
+    #      party whose full label starts or ends with that word. Skipped when
+    #      more than one party matches ("Vandermeer").
+    #   d) Aliases, from any mention: a group whose label equals an alias
+    #      joins the group that declared it — only if that group makes ≥75%
+    #      of the declarations ("the Borrower" on two people merges nothing),
+    #      the absorbed group is a bare role (all labels one word, e.g.
+    #      "Lender"), both groups have the same type, and it's not a date or
+    #      amount.
     # -----------------------------------------------------------------------
 
     # cluster: list of (page_num, item)
@@ -174,44 +222,20 @@ def build_map(
     key_to_cluster: dict[str, int] = {}   # primary key → cluster index
 
     for page_num, item in raw_items:
-        key = _merge_key(item.type, item.label)
+        key = _merge_key(item.label)
         if key in key_to_cluster:
             clusters[key_to_cluster[key]].append((page_num, item))
         else:
-            idx = len(clusters)
+            key_to_cluster[key] = len(clusters)
             clusters.append([(page_num, item)])
-            key_to_cluster[key] = idx
 
-    # Build a map: (type, normalised-name) → cluster index for alias cross-match
-    # "name" = any of label or safe aliases, after _label_core
-    name_to_cluster: dict[tuple[str, str], int] = {}
+    cluster_label = [_label_core(c[0][1].label) for c in clusters]
+    cluster_aliases = [
+        {ac for _, it in c for a in _safe_aliases(it.aliases) if (ac := _label_core(a))}
+        for c in clusters
+    ]
+    cluster_suffix = [_has_company_suffix(lbl) for lbl in cluster_label]
 
-    def _register_names(cluster_idx: int, item_type: str, label: str, aliases: list[str]) -> None:
-        for name in [label] + aliases:
-            n = _label_core(name)
-            if not n:
-                continue
-            full_key = (item_type, n)
-            # First-seen wins: keep the earliest cluster's registration so that
-            # a suffixed label (registered first) isn't overwritten by a bare
-            # label that happens to share the same normalised core.
-            if full_key not in name_to_cluster:
-                name_to_cluster[full_key] = cluster_idx
-            # Also register the suffix-stripped version so a bare label
-            # ("Acme Holdings") can locate this cluster ("Acme Holdings Inc.")
-            n_stripped = _core_without_suffix(n)
-            if n_stripped != n:
-                stripped_key = (item_type, n_stripped)
-                if stripped_key not in name_to_cluster:
-                    name_to_cluster[stripped_key] = cluster_idx
-
-    for idx, cluster in enumerate(clusters):
-        page_num, first = cluster[0]
-        safe = _safe_aliases(first.aliases)
-        _register_names(idx, first.type, first.label, safe)
-
-    # Cross-merge: for each item, look up its names in existing clusters
-    # Collect merge pairs, then union-find to merge transitively
     parent = list(range(len(clusters)))
 
     def _find(x: int) -> int:
@@ -225,35 +249,90 @@ def build_map(
         if ra != rb:
             parent[rb] = ra
 
-    for idx, cluster in enumerate(clusters):
-        page_num, first = cluster[0]
-        core_first = _label_core(first.label)
-        suffix_first = _has_company_suffix(core_first)
-        safe = _safe_aliases(first.aliases)
+    def _groups() -> dict[int, list[int]]:
+        g: dict[int, list[int]] = defaultdict(list)
+        for i in range(len(clusters)):
+            g[_find(i)].append(i)
+        return g
 
-        for name in [first.label] + safe:
-            n = _label_core(name)
-            key = (first.type, n)
-            if key in name_to_cluster:
-                other_idx = name_to_cluster[key]
-                if other_idx == idx:
-                    continue
-                # Suffix guard: two labels both with suffixes → only merge if suffixes match
-                _, other_first = clusters[other_idx][0]
-                core_other = _label_core(other_first.label)
-                suffix_other = _has_company_suffix(core_other)
-                if suffix_first and suffix_other and suffix_first != suffix_other:
-                    continue
-                _union(idx, other_idx)
+    def _group_items(members: list[int]) -> list[tuple[int, PageItem]]:
+        return [x for ci in members for x in clusters[ci]]
 
-    # Group clusters by root
-    root_to_members: dict[int, list[int]] = defaultdict(list)
-    for idx in range(len(clusters)):
-        root_to_members[_find(idx)].append(idx)
+    # b) Suffix-stripped label match. First-seen wins, so a suffixed label
+    #    (registered first) isn't overwritten by a bare label.
+    stripped_to_cluster: dict[str, int] = {}
+    for idx, lbl in enumerate(cluster_label):
+        stripped_to_cluster.setdefault(_core_without_suffix(lbl), idx)
+    for idx, lbl in enumerate(cluster_label):
+        other = stripped_to_cluster[_core_without_suffix(lbl)]
+        if other == idx:
+            continue
+        s1, s2 = cluster_suffix[idx], cluster_suffix[other]
+        if s1 and s2 and s1 != s2:
+            continue
+        _union(idx, other)
+
+    # c) One-word party labels
+    groups = _groups()
+    group_type = {r: _group_type(_group_items(ms)) for r, ms in groups.items()}
+    party_roots = [r for r, t in group_type.items() if t == "party"]
+    end_word_roots: dict[str, set[int]] = defaultdict(set)
+    for r in party_roots:
+        for ci in groups[r]:
+            words = _core_without_suffix(cluster_label[ci]).split()
+            if len(words) >= 2:
+                end_word_roots[words[0]].add(r)
+                end_word_roots[words[-1]].add(r)
+    for r in party_roots:
+        labels = {cluster_label[ci] for ci in groups[r]}
+        if any(len(lbl.split()) > 1 for lbl in labels):
+            continue
+        candidates: set[int] = set()
+        for lbl in labels:
+            if len(lbl) >= 3:
+                candidates |= end_word_roots.get(lbl, set())
+        candidates.discard(r)
+        if len(candidates) == 1:
+            _union(candidates.pop(), r)
+
+    # d) Unambiguous aliases
+    groups = _groups()
+    group_type = {r: _group_type(_group_items(ms)) for r, ms in groups.items()}
+    label_roots: dict[str, set[int]] = defaultdict(set)
+    # alias → root → number of mentions declaring it
+    alias_votes: dict[str, dict[int, int]] = defaultdict(lambda: defaultdict(int))
+    role_only: set[int] = set()  # groups whose labels are all one word ("Lender")
+    for r, ms in groups.items():
+        own_labels = {cluster_label[ci] for ci in ms}
+        if all(len(lbl.split()) == 1 for lbl in own_labels):
+            role_only.add(r)
+        for lbl in own_labels:
+            label_roots[lbl].add(r)
+        for ci in ms:
+            for _, it in clusters[ci]:
+                for a in {_label_core(a) for a in _safe_aliases(it.aliases)} - own_labels:
+                    if a:
+                        alias_votes[a][r] += 1
+    for alias, votes in alias_votes.items():
+        # The owner must make ≥75% of the declarations, so one stray
+        # mis-tag (Hoek "the Lender" once vs Harbourlight four times) is
+        # outvoted, but a genuinely shared role (two Borrowers) merges nothing.
+        owner = max(votes, key=votes.get)
+        if votes[owner] < 0.75 * sum(votes.values()):
+            continue
+        if group_type[owner] in ("date", "amount"):
+            continue
+        for target in label_roots.get(alias, ()):
+            # Only a bare role group ("Lender", "the Company") is absorbed. A
+            # group that already has a proper name ("Municipality of
+            # Harlingerzijl") is a separate entity; an alias pointing at it
+            # is the model confusing two names that share a sentence.
+            if (target != owner and target in role_only
+                    and group_type[target] == group_type[owner]):
+                _union(owner, target)
 
     # Build final merged items
-    # canonical label = label of the item with the most evidence in the group
-    merged: list[dict] = []  # {type, label, aliases, evidence: [(page, quote)]}
+    merged: list[dict] = []  # {type, label, aliases, evidence, names}
 
     # Also build a map: original (page_num, local_id) → merged node index
     item_key_to_node: dict[tuple[int, str], int] = {}
@@ -274,26 +353,27 @@ def build_map(
         a for a, labels in alias_label_map.items() if len(labels) >= 2
     }
 
-    for root, member_idxs in root_to_members.items():
-        all_items: list[tuple[int, PageItem]] = []
-        for ci in member_idxs:
-            all_items.extend(clusters[ci])
+    for root, member_idxs in _groups().items():
+        all_items = _group_items(member_idxs)
+        item_type = _group_type(all_items)
 
-        # Pick canonical label = label with most occurrences (tie-break: first seen)
+        # Canonical label: for parties the fullest name ("Maarten Hoek" over
+        # "Hoek"); otherwise the most frequent label (tie-break: first seen).
         label_count: dict[str, int] = defaultdict(int)
         for _, item in all_items:
             label_count[item.label] += 1
-        canonical = max(label_count, key=lambda l: label_count[l])
-
-        item_type = all_items[0][1].type
+        if item_type == "party":
+            canonical = max(label_count, key=lambda l: (len(_label_core(l).split()), label_count[l]))
+        else:
+            canonical = max(label_count, key=lambda l: label_count[l])
 
         # Collect all unique aliases (excluding stoplist and ambiguous)
         all_aliases: list[str] = []
-        seen_alias_cores: set[str] = set()
+        seen_alias_cores: set[str] = {_label_core(canonical)}
         for _, item in all_items:
-            for a in _safe_aliases(item.aliases):
+            for a in [item.label] + _safe_aliases(item.aliases):
                 ac = _label_core(a)
-                if ac not in ambiguous_aliases and ac not in seen_alias_cores and ac != _label_core(canonical):
+                if ac not in ambiguous_aliases and ac not in seen_alias_cores:
                     seen_alias_cores.add(ac)
                     all_aliases.append(a)
 
@@ -308,6 +388,7 @@ def build_map(
             "label": canonical,
             "aliases": all_aliases,
             "evidence": evidence_pairs,
+            "names": {n for ci in member_idxs for n in cluster_aliases[ci] | {cluster_label[ci]}},
         })
 
         for ci in member_idxs:
@@ -315,9 +396,7 @@ def build_map(
 
     # Map (page_num, local_id) → node index
     for idx, cluster in enumerate(clusters):
-        node_idx = cluster_to_node.get(_find(idx))
-        if node_idx is None:
-            continue
+        node_idx = cluster_to_node[idx]
         for page_num, item in cluster:
             item_key_to_node[(page_num, item.local_id)] = node_idx
 
@@ -329,6 +408,7 @@ def build_map(
     # -----------------------------------------------------------------------
     # Edge dedup key: (source_node_idx, target_node_idx, relation_lower)
     edge_map: dict[tuple[int, int, str], list[tuple[int, str]]] = defaultdict(list)
+    unanchored = 0
 
     for page_num, rel in raw_relations:
         src_key = (page_num, rel.source_local_id)
@@ -339,6 +419,10 @@ def build_map(
             continue  # dangling — one end didn't survive
         if src_idx == tgt_idx:
             continue  # self-loop
+        if not (_quote_names(rel.quote, merged[src_idx]["names"])
+                and _quote_names(rel.quote, merged[tgt_idx]["names"])):
+            unanchored += 1
+            continue  # quote doesn't name both ends — likely a mis-wired id
         edge_key = (src_idx, tgt_idx, rel.relation.lower())
         edge_map[edge_key].append((page_num, rel.quote))
 
@@ -385,6 +469,12 @@ def build_map(
         "t_ms": _ms(),
         "message": f"Assembled graph: {len(output_nodes)} nodes, {len(output_edges)} edges",
     })
+
+    if unanchored:
+        steps.append({
+            "t_ms": _ms(),
+            "message": f"Dropped {unanchored} links: quote doesn't name both ends",
+        })
 
     if dropped:
         steps.append({

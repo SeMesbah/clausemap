@@ -4,9 +4,9 @@ Source of truth: docs/contract.md — do not drift from it.
 """
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class Evidence(BaseModel):
@@ -58,3 +58,30 @@ class MapResult(BaseModel):
     stats: Stats
     steps: list[Step]
     warnings: list[str] = []
+
+
+# ---------------------------------------------------------------------------
+# Ask — contract v1.1
+# ---------------------------------------------------------------------------
+
+class AskRequest(BaseModel):
+    question: Annotated[str, Field(min_length=1, max_length=300)]
+    map: MapResult
+
+    @field_validator("question", mode="before")
+    @classmethod
+    def strip_question(cls, v: str) -> str:
+        return v.strip()
+
+
+class Citation(BaseModel):
+    page: int
+    quote: str
+
+
+class AskResponse(BaseModel):
+    answer: str
+    node_ids: list[str] = []
+    edge_ids: list[str] = []
+    citations: list[Citation] = []
+    dropped_citations: int = 0
