@@ -1,25 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
-app = FastAPI(title="DocVerse API", version="0.1.0")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+app = FastAPI(title="Clausemap API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.get("/health")
+@app.get("/api/v1/health")
 def health():
     return {"status": "ok"}
 
 
-# Routers will be added here
-# from ingestion.router import router as ingestion_router
-# from graph.router import router as graph_router
-# from rag.router import router as rag_router
-# app.include_router(ingestion_router, prefix="/api")
-# app.include_router(graph_router, prefix="/api")
-# app.include_router(rag_router, prefix="/api")
+# Routers added in later phases:
+# from app.router import router as maps_router
+# app.include_router(maps_router, prefix="/api/v1")

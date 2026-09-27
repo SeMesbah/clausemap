@@ -3,7 +3,13 @@ import UploadScreen from './components/UploadScreen/UploadScreen'
 import GraphCanvas from './components/GraphCanvas/GraphCanvas'
 import NodePanel from './components/NodePanel/NodePanel'
 import ChatBox from './components/ChatBox/ChatBox'
+import MapPage from './pages/MapPage'
 import './App.css'
+
+// Route to MapPage when ?source=fixture (or ?source=<anything>) is in the URL.
+// A full router is added in Phase B2/B3.
+const _params = new URLSearchParams(window.location.search)
+const IS_MAP_ROUTE = _params.has('source') || window.location.pathname.startsWith('/map')
 
 export type AppStage = 'upload' | 'processing' | 'explore'
 
@@ -29,6 +35,8 @@ export interface GraphData {
 }
 
 function App() {
+  if (IS_MAP_ROUTE) return <MapPage />
+
   const [stage, setStage] = useState<AppStage>('upload')
   const [graphData, setGraphData] = useState<GraphData | null>(null)
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)

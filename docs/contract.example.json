@@ -1,0 +1,77 @@
+{
+  "schema_version": "1",
+  "document": {
+    "title": "Sample Services Agreement",
+    "page_count": 3
+  },
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Acme Holdings Inc.",
+      "type": "party",
+      "aliases": ["the Company", "Acme"],
+      "mentions": 3,
+      "evidence": [
+        { "page": 1, "quote": "This Agreement is entered into by Acme Holdings Inc. (hereinafter \"the Company\")" }
+      ]
+    },
+    {
+      "id": "n2",
+      "label": "deliver quarterly reports",
+      "type": "obligation",
+      "aliases": [],
+      "mentions": 2,
+      "evidence": [
+        { "page": 2, "quote": "The Company shall deliver quarterly reports to the Board no later than thirty days after each quarter end." }
+      ]
+    },
+    {
+      "id": "n3",
+      "label": "30 days after quarter end",
+      "type": "date",
+      "aliases": ["thirty days after each quarter end"],
+      "mentions": 1,
+      "evidence": [
+        { "page": 2, "quote": "no later than thirty days after each quarter end" }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "n1",
+      "target": "n2",
+      "relation": "must perform",
+      "evidence": [
+        { "page": 2, "quote": "The Company shall deliver quarterly reports to the Board no later than thirty days after each quarter end." }
+      ]
+    },
+    {
+      "id": "e2",
+      "source": "n2",
+      "target": "n3",
+      "relation": "due by",
+      "evidence": [
+        { "page": 2, "quote": "no later than thirty days after each quarter end" }
+      ]
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "nodes_before_merge": 4,
+    "nodes": 3,
+    "edges": 2,
+    "items_dropped_unverified": 1,
+    "duration_ms": 4200
+  },
+  "steps": [
+    { "t_ms": 0, "message": "Read 3 pages" },
+    { "t_ms": 120, "message": "Extracted items from page 1" },
+    { "t_ms": 890, "message": "Extracted items from page 2" },
+    { "t_ms": 1540, "message": "Extracted items from page 3" },
+    { "t_ms": 2100, "message": "Verified quotes — dropped 1 unverified" },
+    { "t_ms": 2300, "message": "Merged duplicates: 4 → 3 nodes" },
+    { "t_ms": 2310, "message": "Assembled graph: 3 nodes, 2 edges" }
+  ],
+  "warnings": []
+}
